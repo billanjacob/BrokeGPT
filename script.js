@@ -19,7 +19,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
-  'Stationary', 'Internet', 'Saloon', 'Gym',
+  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries',
 ];
 
 const CATEGORY_META = {
@@ -40,6 +40,7 @@ const CATEGORY_META = {
   Internet:      { icon: 'wifi',               color: '#0284C7' },
   Saloon:        { icon: 'content_cut',        color: '#D946EF' },
   Gym:           { icon: 'fitness_center',     color: '#84CC16' },
+  Groceries:     { icon: 'local_grocery_store', color: '#16A34A' },
 };
 
 const NAME_CATEGORY_RULES = [
@@ -56,6 +57,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['mutual fund', 'sip', 'zerodha', 'groww', 'stocks', 'shares', 'gold bond', 'fixed deposit', 'ppf', 'nps', 'elss', 'investment', 'lic premium', 'insurance premium'], category: 'Investment' },
   { keywords: ['church', 'donation', 'tithe', 'offering', 'charity', 'ngo', 'temple', 'mosque', 'daan', 'contribution'], category: 'Donation' },
   { keywords: ['gift', 'birthday gift', 'anniversary gift', 'wedding gift', 'present for'], category: 'Gifts' },
+  { keywords: ['grocery', 'groceries', 'supermarket', 'dmart', 'bigbasket', 'blinkit', 'zepto', 'jiomart', 'more supermarket', 'reliance fresh', 'nature basket', 'vegetables', 'fruits', 'rice', 'dal', 'wheat', 'atta', 'oil', 'milk', 'eggs', 'provisions'], category: 'Groceries' },
   { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
   { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports fee', 'sports kit'], category: 'Gym' },
@@ -242,8 +244,8 @@ function getGreeting() {
 }
 
 function getCatMeta(category) {
-  if (CATEGORY_META[category]) return CATEGORY_META[category];
   if (appData?.settings?.customCategoryMeta?.[category]) return appData.settings.customCategoryMeta[category];
+  if (CATEGORY_META[category]) return CATEGORY_META[category];
   return { icon: 'category', color: '#64748B' };
 }
 
