@@ -15,69 +15,6 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const APP_VERSION = '1.0.0';
 
-const QUOTES = [
-  "You survived another payday.",
-  "Congratulations. You can still afford tea.",
-  "Your wallet has left the chat.",
-  "EMIs send their regards.",
-  "Financial stability is under maintenance.",
-  "Your salary had a good run.",
-  "Budget: a formal plan to spend money you don't have.",
-  "Money flies. Rent just runs.",
-  "Saving money is an extreme sport.",
-  "Your bank account is in airplane mode.",
-  "Dreams are free. Everything else is on EMI.",
-  "Net worth: negative thinking.",
-  "Inflation hit different this month.",
-  "Your future self is currently filing a complaint.",
-  "Money talks. Mine whispered goodbye.",
-  "Error 404: Savings not found.",
-  "Your credit score called. It was crying.",
-  "Adulting level: googling 'is water free'.",
-  "Financial goal: stop being broke.",
-  "Coffee addiction > retirement fund.",
-  "Your wallet is on a spiritual journey.",
-  "I'm not broke. I'm pre-rich.",
-  "UPI payment failed. So did my life choices.",
-  "The economy is great. You are not the economy.",
-  "Payday is the day before all your bills are due.",
-  "Your subscription to being broke has been renewed.",
-  "Money can't buy happiness. Mine bought groceries.",
-  "You technically have money. It's just very scared.",
-  "Your spending is aggressively optimistic.",
-  "Fun fact: you cannot eat clout.",
-  "This month's theme: character development.",
-  "The rent is too high. The salary is too low.",
-  "One impulse buy from enlightenment.",
-  "Your bank balance is practicing minimalism.",
-  "Zomato has been extremely helpful in draining your savings.",
-  "Technically not broke if you don't check your balance.",
-  "Money management skill: pretending you have it.",
-  "Your shopping cart has more hope than your wallet.",
-  "Living on vibes and bank overdrafts.",
-  "Rich in spirit. Poor in reality.",
-  "Your budget is a work of beautiful fiction.",
-  "Finance tip: stop buying things.",
-  "Monthly expenses > monthly income. Classic.",
-  "You're sponsored by zero savings.",
-  "Tax season is just the government saying hi.",
-  "One day you'll look back and laugh. Not today.",
-  "Your wallet is on a juice cleanse.",
-  "Financially, things could be worse. Don't ask how.",
-  "Broke: not a phase, it's a lifestyle.",
-  "Your bank sent a hug. It was all they could afford.",
-  "Wealth is just poverty with better marketing.",
-  "You: I'll save next month. Also you: buys more stuff.",
-  "Compound interest is when the universe punishes optimism.",
-  "Investment strategy: hoping for the best.",
-  "Your card was declined. Your spirit was not.",
-  "Side hustle? You can barely hustle on the main one.",
-  "Zero balance is just a number. A very real number.",
-  "Technically, sleeping counts as not spending.",
-  "Your finances are a vibe. A bad one.",
-  "Financial freedom is just debt in a trench coat.",
-  "Wallet status: emotionally unavailable.",
-];
 
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
@@ -2123,11 +2060,6 @@ function setupKeyboardShortcuts() {
    QUOTE ROTATION
    ============================================================ */
 
-function setRandomQuote() {
-  const idx = Math.floor(Math.random() * QUOTES.length);
-  const el = document.getElementById('quote-text');
-  if (el) el.textContent = `"${QUOTES[idx]}"`;
-}
 
 /* ============================================================
    EVENT LISTENERS
@@ -2428,8 +2360,7 @@ async function init() {
     setTimeout(() => { loadingEl.style.display = 'none'; }, 290);
   }
 
-  // Show random quote
-  setRandomQuote();
+
 
   // Update month labels (sidebar chip + nav bar)
   updateSidebarMonthLabel();
@@ -2456,8 +2387,6 @@ async function init() {
     setTimeout(() => { openSalaryModal(); }, 600);
   }
 
-  // Rotate quote every 30 seconds
-  setInterval(setRandomQuote, 30000);
 }
 
 // Boot the application when DOM is ready

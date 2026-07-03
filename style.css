@@ -372,30 +372,7 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
-.header-quote {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-  overflow: hidden;
-}
 
-.quote-glyph {
-  font-size: 18px;
-  color: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.quote-text {
-  font-size: var(--text-sm);
-  color: var(--text-2);
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  animation: fadeIn 0.5s var(--ease-out);
-}
 
 .header-right {
   display: flex;
