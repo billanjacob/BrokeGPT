@@ -37,6 +37,21 @@ const CATEGORY_META = {
   Other:         { icon: 'category',           color: '#64748B' },
 };
 
+const NAME_CATEGORY_RULES = [
+  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'diner', 'dining', 'eatery', 'mess', 'canteen', 'food court'], category: 'Restaurant' },
+  { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie'], category: 'Bakery' },
+  { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
+  { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
+  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'maintenance'], category: 'Bills' },
+  { keywords: ['netflix', 'hotstar', 'spotify', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
+  { keywords: ['hospital', 'clinic', 'pharmacy', 'medicine', 'doctor', 'apollo', 'medplus', 'blood test', 'xray', 'scan', 'medical', 'tablet', 'syrup', 'injection', 'health', 'dental', 'dentist', 'lab test', 'diagnostic'], category: 'Medical' },
+  { keywords: ['uber', 'ola cab', 'metro', 'irctc', 'redbus', 'rapido', 'flight', 'indigo', 'air india', 'spicejet', 'bus ticket', 'train ticket', 'toll', 'highway', 'travel', 'cab', 'taxi', 'auto ride', 'airport', 'hotel stay'], category: 'Travel' },
+  { keywords: ['emi', 'loan emi', 'home loan', 'car loan', 'personal loan', 'bajaj finance', 'hdfc loan', 'icici loan', 'axis loan', 'equitas', 'credit emi'], category: 'EMI' },
+  { keywords: ['mutual fund', 'sip', 'zerodha', 'groww', 'stocks', 'shares', 'gold bond', 'fixed deposit', 'ppf', 'nps', 'elss', 'investment', 'lic premium', 'insurance premium'], category: 'Investment' },
+  { keywords: ['church', 'donation', 'tithe', 'offering', 'charity', 'ngo', 'temple', 'mosque', 'daan', 'contribution'], category: 'Donation' },
+  { keywords: ['gift', 'birthday gift', 'anniversary gift', 'wedding gift', 'present for'], category: 'Gifts' },
+];
+
 const CHART_COLORS = [
   '#2563EB', '#EF4444', '#22C55E', '#F59E0B', '#EC4899',
   '#06B6D4', '#8B5CF6', '#F97316', '#6366F1', '#10B981', '#64748B',
@@ -220,6 +235,17 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function guessCategory(name) {
+  if (!name || name.length < 3) return null;
+  const lower = ' ' + name.toLowerCase() + ' ';
+  for (const rule of NAME_CATEGORY_RULES) {
+    for (const kw of rule.keywords) {
+      if (lower.includes(kw)) return rule.category;
+    }
+  }
+  return null;
 }
 
 /* ============================================================
@@ -1780,9 +1806,10 @@ function openEditExpenseModal(expenseId) {
 function populateCategorySelects() {
   const sel = document.getElementById('exp-category');
   if (!sel) return;
-  sel.innerHTML = [...appData.categories].sort((a, b) => a.localeCompare(b)).map(cat =>
+  const options = [...appData.categories].sort((a, b) => a.localeCompare(b)).map(cat =>
     `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
   ).join('');
+  sel.innerHTML = `<option value="" disabled selected>Select category</option>` + options;
 }
 
 function handleExpenseFormSubmit(e) {
@@ -2245,6 +2272,17 @@ function setupEventListeners() {
   // ── Expense form ────────────────────────────────────────
   const expenseForm = document.getElementById('expense-form');
   if (expenseForm) expenseForm.addEventListener('submit', handleExpenseFormSubmit);
+
+  const expNameInput = document.getElementById('exp-name');
+  if (expNameInput) {
+    expNameInput.addEventListener('input', () => {
+      const guess = guessCategory(expNameInput.value);
+      if (guess) {
+        const catSel = document.getElementById('exp-category');
+        if (catSel && appData.categories.includes(guess)) catSel.value = guess;
+      }
+    });
+  }
 
   const expAmountInput = document.getElementById('exp-amount');
   if (expAmountInput) expAmountInput.addEventListener('input', (e) => {
