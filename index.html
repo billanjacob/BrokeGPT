@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="BrokeGPT — Personal finance tracker. Making poor decisions look professional." />
-  <meta name="theme-color" content="#2563EB" />
+  <meta name="theme-color" content="#279979" />
   <title>BrokeGPT — Making poor decisions look professional.</title>
   <link rel="icon" type="image/svg+xml" href="assets/brokegpt.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -105,6 +105,10 @@
       <span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>
       <span id="sidebar-month-label">Loading…</span>
     </div>
+    <button class="nav-item logout-btn" id="logout-btn" aria-label="Log out">
+      <span class="material-symbols-rounded nav-icon" aria-hidden="true">logout</span>
+      <span class="nav-label">Log out</span>
+    </button>
   </div>
 
 </aside>
@@ -360,6 +364,7 @@
             <span class="material-symbols-rounded">chevron_right</span>
           </button>
         </div>
+        <select class="cat-filter-select" id="cat-filter-select" aria-label="Filter by category"></select>
       </div>
 
       <!-- Result Stats -->
@@ -367,9 +372,8 @@
         <span class="results-count" id="results-count">0 expenses</span>
         <span class="results-total" id="results-total">Total: ₹0</span>
         <div class="results-bar-actions">
-          <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Sort by date">
-            <span class="material-symbols-rounded">arrow_downward</span>
-            <span id="sort-date-label">Newest</span>
+          <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Newest first">
+            <span class="material-symbols-rounded" id="sort-date-icon">arrow_downward</span>
           </button>
           <button class="icon-btn" id="expense-view-toggle" aria-label="Toggle tile view" title="Toggle tile view">
             <span class="material-symbols-rounded" id="expense-view-icon">grid_view</span>

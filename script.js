@@ -30,7 +30,7 @@ const CATEGORY_META = {
   Bills: { icon: 'receipt_long', color: '#8B5CF6' },
   Entertainment: { icon: 'movie', color: '#06B6D4' },
   Medical: { icon: 'medical_services', color: '#10B981' },
-  Travel: { icon: 'flight', color: '#3B82F6' },
+  Travel: { icon: 'flight', color: '#34B896' },
   EMI: { icon: 'credit_card', color: '#6366F1' },
   Investment: { icon: 'trending_up', color: '#22C55E' },
   Donation: { icon: 'volunteer_activism', color: '#F43F5E' },
@@ -79,13 +79,13 @@ const ICON_PICKER_OPTIONS = [
 const COLOR_PALETTE = [
   '#EF4444', '#F97316', '#F59E0B', '#EAB308',
   '#84CC16', '#22C55E', '#10B981', '#06B6D4',
-  '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6',
+  '#0EA5E9', '#34B896', '#6366F1', '#8B5CF6',
   '#A855F7', '#D946EF', '#EC4899', '#F43F5E',
   '#64748B', '#0284C7',
 ];
 
 const CHART_COLORS = [
-  '#2563EB', '#EF4444', '#22C55E', '#F59E0B', '#EC4899',
+  '#279979', '#EF4444', '#22C55E', '#F59E0B', '#EC4899',
   '#06B6D4', '#8B5CF6', '#F97316', '#6366F1', '#10B981', '#64748B',
 ];
 
@@ -1148,12 +1148,11 @@ function renderExpenses() {
       : a.timestamp - b.timestamp;
   });
 
-  // Sync sort button label + icon
+  // Sync sort button icon + tooltip
   const sortBtn = document.getElementById('sort-date-btn');
-  const sortLabel = document.getElementById('sort-date-label');
-  const sortIcon = sortBtn?.querySelector('.material-symbols-rounded');
-  if (sortLabel) sortLabel.textContent = expenseSortDir === 'desc' ? 'Newest' : 'Oldest';
+  const sortIcon = document.getElementById('sort-date-icon');
   if (sortIcon) sortIcon.textContent = expenseSortDir === 'desc' ? 'arrow_downward' : 'arrow_upward';
+  if (sortBtn) sortBtn.title = expenseSortDir === 'desc' ? 'Newest first' : 'Oldest first';
 
   const filtered = filterExpenses(
     allExpenses, activeTimeFilter, customRangeFrom, customRangeTo, activeCatFilter, searchQuery
@@ -1241,7 +1240,7 @@ function buildExpenseItemHtml(e, compact) {
           <span class="expense-cat-label">${escapeHtml(e.category)}</span>
           <span class="expense-dot" aria-hidden="true"></span>
           <span class="expense-date-label">${compact ? formatDateShort(e.date) : formatDate(e.date)}</span>
-          <span class="expense-mode-badge ${(e.mode || 'Cash') === 'Cash' ? 'cash' : ''}">${escapeHtml(e.mode || 'Cash')}</span>
+          <span class="expense-mode-badge ${(e.mode || 'Cash') === 'Cash' ? 'cash' : (e.mode || '') === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode || 'Cash')}</span>
           ${noteTag}
         </div>
       </div>
@@ -1276,7 +1275,7 @@ function buildExpenseTileHtml(e) {
           <span class="expense-tile-date">${formatDateShort(e.date)}</span>
         </div>
         <div class="expense-tile-footer">
-          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : ''}">${escapeHtml(e.mode)}</span>` : ''}</span>
+          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : e.mode === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode)}</span>` : ''}</span>
           <div class="expense-tile-actions">
             <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit ${escapeHtml(e.name)}">
               <span class="material-symbols-rounded">edit</span>
@@ -1304,31 +1303,44 @@ function attachExpenseItemEvents(container) {
 
 function renderCategoryChips() {
   const bar = document.getElementById('cat-chips-bar');
-  if (!bar) return;
+  const sel = document.getElementById('cat-filter-select');
   const sorted = [...appData.categories].sort((a, b) => a.localeCompare(b));
   const cats = ['all', ...sorted];
-  bar.innerHTML = cats.map(cat => {
-    const meta = cat === 'all' ? null : getCatMeta(cat);
-    const isActive = activeCatFilter === cat;
-    const color = meta?.color || '#64748B';
-    const icon = meta?.icon || 'category';
-    const bgStyle = isActive
-      ? (cat === 'all'
-        ? `background:var(--color-primary);border-color:var(--color-primary)`
-        : `background:${color};border-color:${color}`)
-      : '';
-    const iconHtml = cat === 'all'
-      ? `<span class="material-symbols-rounded">apps</span>`
-      : `<span class="material-symbols-rounded">${icon}</span>`;
-    return `<button class="cat-chip${isActive ? ' active' : ''}" data-cat="${escapeHtml(cat)}" style="${bgStyle}" aria-pressed="${isActive}">${iconHtml} ${cat === 'all' ? 'All' : escapeHtml(cat)}</button>`;
-  }).join('');
 
-  bar.querySelectorAll('.cat-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      activeCatFilter = chip.dataset.cat;
-      renderExpenses();
+  if (bar) {
+    bar.innerHTML = cats.map(cat => {
+      const meta = cat === 'all' ? null : getCatMeta(cat);
+      const isActive = activeCatFilter === cat;
+      const color = meta?.color || '#64748B';
+      const icon = meta?.icon || 'category';
+      const bgStyle = isActive
+        ? (cat === 'all'
+          ? `background:var(--color-primary);border-color:var(--color-primary)`
+          : `background:${color};border-color:${color}`)
+        : '';
+      const iconHtml = cat === 'all'
+        ? `<span class="material-symbols-rounded">apps</span>`
+        : `<span class="material-symbols-rounded">${icon}</span>`;
+      return `<button class="cat-chip${isActive ? ' active' : ''}" data-cat="${escapeHtml(cat)}" style="${bgStyle}" aria-pressed="${isActive}">${iconHtml} ${cat === 'all' ? 'All' : escapeHtml(cat)}</button>`;
+    }).join('');
+
+    bar.querySelectorAll('.cat-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        activeCatFilter = chip.dataset.cat;
+        renderExpenses();
+      });
     });
-  });
+  }
+
+  if (sel) {
+    sel.innerHTML = cats.map(cat =>
+      `<option value="${escapeHtml(cat)}"${activeCatFilter === cat ? ' selected' : ''}>${cat === 'all' ? 'All Categories' : escapeHtml(cat)}</option>`
+    ).join('');
+    sel.onchange = () => {
+      activeCatFilter = sel.value;
+      renderExpenses();
+    };
+  }
 }
 
 /* ============================================================
@@ -1487,8 +1499,8 @@ function renderBarChart() {
 
     const isCurrent = m === currentMonthId;
     const grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
-    grad.addColorStop(0, isCurrent ? '#2563EB' : '#3B82F6');
-    grad.addColorStop(1, isCurrent ? '#1D4ED8' : '#93C5FD');
+    grad.addColorStop(0, isCurrent ? '#279979' : '#34B896');
+    grad.addColorStop(1, isCurrent ? '#1E7A5E' : '#7DD5B8');
 
     // Bar
     const radius = Math.min(6, barW / 2);
@@ -1506,12 +1518,12 @@ function renderBarChart() {
 
     // Hover-style highlight if current
     if (isCurrent) {
-      ctx.fillStyle = 'rgba(37,99,235,0.08)';
+      ctx.fillStyle = 'rgba(39,153,121,0.08)';
       ctx.fillRect(x - 4, padT, barW + 8, chartH);
     }
 
     // X label
-    ctx.fillStyle = isCurrent ? '#2563EB' : textColor;
+    ctx.fillStyle = isCurrent ? '#279979' : textColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.font = isCurrent ? 'bold 11px Inter, sans-serif' : '11px Inter, sans-serif';
@@ -1705,7 +1717,7 @@ function renderLineChart() {
 
     // X label
     const isCurrent = m === currentMonthId;
-    ctx.fillStyle = isCurrent ? '#2563EB' : textColor;
+    ctx.fillStyle = isCurrent ? '#279979' : textColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.font = isCurrent ? 'bold 11px Inter, sans-serif' : '11px Inter, sans-serif';
@@ -1734,7 +1746,7 @@ function renderHistory() {
     const stats = calcMonthStats(m.id);
     const pct = stats.salary > 0 ? clamp(Math.round(stats.percentSpent), 0, 100) : 0;
     const isCur = m.id === currentMonthId;
-    const barColor = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#2563EB';
+    const barColor = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#279979';
 
     return `
       <div class="history-month-card${isCur ? ' current-month' : ''}"
