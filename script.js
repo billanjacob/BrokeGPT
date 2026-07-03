@@ -76,7 +76,6 @@ const DEFAULT_DATA = {
 let appData = null;
 let currentView = 'dashboard';
 let currentMonthId = '';
-let historyMonthId = '';
 let analyticsMonthId = '';
 let activeTimeFilter = 'month';
 let activeCatFilter = 'all';
@@ -515,10 +514,11 @@ function calcMonthStats(monthId) {
   const remaining = Math.max(0, salary - totalSpent);
   const savings = salary - totalSpent;
   const pctSpent = salary > 0 ? Math.min(100, (totalSpent / salary) * 100) : 0;
-  const daysRemain = getDaysRemainingInMonth();
-  const dailyLimit = daysRemain > 0 ? remaining / daysRemain : 0;
-  const dayOfMon = getDayOfMonth();
+  const isCurrentMonth = monthId === getCurrentMonthId();
   const daysInMon = getDaysInMonth(month.year, month.month);
+  const dayOfMon = isCurrentMonth ? getDayOfMonth() : daysInMon;
+  const daysRemain = isCurrentMonth ? getDaysRemainingInMonth() : 0;
+  const dailyLimit = daysRemain > 0 ? remaining / daysRemain : 0;
   return {
     salary, totalSpent, remaining, savings,
     percentSpent: pctSpent, dailyLimit, daysRemaining: daysRemain,
@@ -1111,7 +1111,10 @@ function buildDateLabel(dateStr) {
 function getYesterdayStr() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function buildExpenseItemHtml(e, compact) {
@@ -1726,8 +1729,7 @@ function setModeToggle(mode) {
 function openAddExpenseModal() {
   editingExpenseId = null;
   document.getElementById('expense-modal-title').textContent = 'Add Expense';
-  document.getElementById('expense-save-btn').innerHTML =
-    '<span class="material-symbols-rounded">add</span> Add Expense';
+  document.getElementById('expense-save-btn').textContent = 'Submit Expense';
 
   const form = document.getElementById('expense-form');
   form.reset();
@@ -1747,6 +1749,7 @@ function openAddExpenseModal() {
     dateInput.value = `${currentMonthId}-01`;
   }
   document.getElementById('exp-amount-prefix').textContent = appData.settings.currency || '₹';
+  document.getElementById('expense-add-another-btn').style.display = 'inline-flex';
 
   openModal('modal-expense');
 }
@@ -1759,8 +1762,8 @@ function openEditExpenseModal(expenseId) {
 
   editingExpenseId = expenseId;
   document.getElementById('expense-modal-title').textContent = 'Edit Expense';
-  document.getElementById('expense-save-btn').innerHTML =
-    '<span class="material-symbols-rounded">save</span> Save Changes';
+  document.getElementById('expense-save-btn').textContent = 'Save Changes';
+  document.getElementById('expense-add-another-btn').style.display = 'none';
 
   populateCategorySelects();
   document.getElementById('exp-name').value = expense.name;
@@ -1775,14 +1778,11 @@ function openEditExpenseModal(expenseId) {
 }
 
 function populateCategorySelects() {
-  const selects = ['exp-category', 'fixed-category'];
-  selects.forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = appData.categories.map(cat =>
-      `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
-    ).join('');
-  });
+  const sel = document.getElementById('exp-category');
+  if (!sel) return;
+  sel.innerHTML = [...appData.categories].sort((a, b) => a.localeCompare(b)).map(cat =>
+    `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
+  ).join('');
 }
 
 function handleExpenseFormSubmit(e) {
@@ -1799,6 +1799,9 @@ function handleExpenseFormSubmit(e) {
   if (isNaN(amount) || amount < 0) { showToast('Please enter a valid amount.', 'warning'); return; }
   if (!category) { showToast('Please select a category.', 'warning'); return; }
   if (!date) { showToast('Please select a date.', 'warning'); return; }
+  if (date.slice(0, 7) !== currentMonthId) {
+    showToast(`Date must be within ${formatMonthName(currentMonthId)}.`, 'warning'); return;
+  }
 
   const month = appData.months[currentMonthId];
   if (!month) { showToast('Month data not found.', 'error'); return; }
@@ -1825,6 +1828,43 @@ function handleExpenseFormSubmit(e) {
   if (!editingExpenseId && (!month.salarySet || !month.salary)) {
     setTimeout(() => openSalaryModal(), 300);
   }
+}
+
+function handleAddAnother() {
+  const name = document.getElementById('exp-name').value.trim();
+  const amount = parseAmountInput(document.getElementById('exp-amount').value);
+  const category = document.getElementById('exp-category').value;
+  const date = document.getElementById('exp-date').value;
+  const note = document.getElementById('exp-note').value.trim();
+  const mode = document.getElementById('exp-mode').value || 'Cash';
+
+  if (!name) { showToast('Please enter a name.', 'warning'); return; }
+  if (isNaN(amount) || amount <= 0) { showToast('Please enter a valid amount.', 'warning'); return; }
+  if (!category) { showToast('Please select a category.', 'warning'); return; }
+  if (!date) { showToast('Please select a date.', 'warning'); return; }
+  if (date.slice(0, 7) !== currentMonthId) {
+    showToast(`Date must be within ${formatMonthName(currentMonthId)}.`, 'warning'); return;
+  }
+
+  const month = appData.months[currentMonthId];
+  if (!month) { showToast('Month data not found.', 'error'); return; }
+
+  const newExp = {
+    id: generateId('exp'),
+    name, amount, category, date, note, mode,
+    timestamp: Date.now(),
+  };
+  month.expenses.push(newExp);
+  syncInsertExpense(currentMonthId, newExp);
+  showToast('Expense added!', 'success');
+
+  // Reset only name, amount, note — keep date, category, mode for convenience
+  document.getElementById('exp-name').value = '';
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-note').value = '';
+  document.getElementById('exp-name').focus();
+
+  refreshCurrentView();
 }
 
 /* ============================================================
@@ -1883,11 +1923,6 @@ function handleSalarySave() {
   showToast(`Income set to ${formatCurrency(val)} for ${formatMonthShort(currentMonthId)}`, 'success');
   refreshCurrentView();
 }
-
-/* ============================================================
-   FIXED EXPENSE MODAL
-   ============================================================ */
-
 
 /* ============================================================
    CATEGORIES
@@ -1981,7 +2016,7 @@ function importBackup(file) {
         (m.expenses || []).map(e => ({
           id: e.id, month_id: m.id, name: e.name, amount: e.amount,
           category: e.category, date: e.date, note: e.note || '',
-          timestamp: e.timestamp,
+          mode: e.mode || 'Cash', timestamp: e.timestamp,
         }))
       );
 
@@ -2070,11 +2105,6 @@ function setupKeyboardShortcuts() {
     }
   });
 }
-
-/* ============================================================
-   QUOTE ROTATION
-   ============================================================ */
-
 
 /* ============================================================
    EVENT LISTENERS
@@ -2240,6 +2270,9 @@ function setupEventListeners() {
 
   const expCloseBtn = document.getElementById('expense-modal-close');
   if (expCloseBtn) expCloseBtn.addEventListener('click', () => closeModal('modal-expense'));
+
+  const addAnotherBtn = document.getElementById('expense-add-another-btn');
+  if (addAnotherBtn) addAnotherBtn.addEventListener('click', handleAddAnother);
 
   // ── Delete modal ────────────────────────────────────────
   const deleteCancelBtn = document.getElementById('delete-cancel-btn');
