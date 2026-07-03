@@ -1,4 +1,4 @@
-# BrokeGPT 💸
+# BrokeGPT
 
 > **Powered by regret.**
 

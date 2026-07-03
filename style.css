@@ -810,6 +810,10 @@ canvas { display: block; }
   pointer-events: auto;
 }
 
+.expense-item:hover .expense-right {
+  gap: var(--space-2);
+}
+
 .expense-cat-icon {
   width: 38px;
   height: 38px;
@@ -892,6 +896,13 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
+.expense-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
 .expense-actions {
   display: flex;
   align-items: center;
@@ -899,7 +910,6 @@ canvas { display: block; }
   opacity: 0;
   transition: opacity var(--dur-fast) var(--ease);
   pointer-events: none;
-  margin-left: var(--space-2);
 }
 
 .expense-list { display: flex; flex-direction: column; gap: 2px; touch-action: pan-y; }
@@ -2829,7 +2839,17 @@ kbd {
 
   .settings-layout { grid-template-columns: 1fr; }
 
-  .expense-actions { display: flex; opacity: 1; pointer-events: auto; }
+  .expense-item { gap: var(--space-2); padding: var(--space-2) var(--space-3); }
+
+  .expense-meta { flex-wrap: wrap; row-gap: 2px; }
+
+  .expense-note-label { display: none; }
+
+  .expense-right { flex-direction: column; align-items: flex-end; gap: 4px; }
+
+  .expense-amount { font-size: var(--text-sm); }
+
+  .expense-actions { opacity: 1; pointer-events: auto; }
 
   .btn { padding: 8px var(--space-3); }
 

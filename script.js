@@ -1192,14 +1192,16 @@ function buildExpenseItemHtml(e, compact) {
           ${noteTag}
         </div>
       </div>
-      <div class="expense-amount">${formatCurrency(e.amount)}</div>
-      <div class="expense-actions">
-        <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit expense ${escapeHtml(e.name)}">
-          <span class="material-symbols-rounded">edit</span>
-        </button>
-        <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(e.id)}" aria-label="Delete expense ${escapeHtml(e.name)}">
-          <span class="material-symbols-rounded">delete</span>
-        </button>
+      <div class="expense-right">
+        <div class="expense-amount">${formatCurrency(e.amount)}</div>
+        <div class="expense-actions">
+          <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit expense ${escapeHtml(e.name)}">
+            <span class="material-symbols-rounded">edit</span>
+          </button>
+          <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(e.id)}" aria-label="Delete expense ${escapeHtml(e.name)}">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
+        </div>
       </div>
     </div>`;
 }
