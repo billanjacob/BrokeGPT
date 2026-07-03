@@ -19,6 +19,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
+  'Stationary', 'Internet', 'Saloon', 'Gym',
 ];
 
 const CATEGORY_META = {
@@ -35,6 +36,10 @@ const CATEGORY_META = {
   Donation:      { icon: 'volunteer_activism', color: '#F43F5E' },
   Gifts:         { icon: 'card_giftcard',      color: '#A855F7' },
   Other:         { icon: 'category',           color: '#64748B' },
+  Stationary:    { icon: 'edit_note',          color: '#0EA5E9' },
+  Internet:      { icon: 'wifi',               color: '#0284C7' },
+  Saloon:        { icon: 'content_cut',        color: '#D946EF' },
+  Gym:           { icon: 'fitness_center',     color: '#84CC16' },
 };
 
 const NAME_CATEGORY_RULES = [
@@ -42,7 +47,8 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
-  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'maintenance'], category: 'Bills' },
+  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack'], category: 'Internet' },
+  { keywords: ['electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'maintenance', 'society'], category: 'Bills' },
   { keywords: ['netflix', 'hotstar', 'spotify', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
   { keywords: ['hospital', 'clinic', 'pharmacy', 'medicine', 'doctor', 'apollo', 'medplus', 'blood test', 'xray', 'scan', 'medical', 'tablet', 'syrup', 'injection', 'health', 'dental', 'dentist', 'lab test', 'diagnostic'], category: 'Medical' },
   { keywords: ['uber', 'ola cab', 'metro', 'irctc', 'redbus', 'rapido', 'flight', 'indigo', 'air india', 'spicejet', 'bus ticket', 'train ticket', 'toll', 'highway', 'travel', 'cab', 'taxi', 'auto ride', 'airport', 'hotel stay'], category: 'Travel' },
@@ -50,6 +56,28 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['mutual fund', 'sip', 'zerodha', 'groww', 'stocks', 'shares', 'gold bond', 'fixed deposit', 'ppf', 'nps', 'elss', 'investment', 'lic premium', 'insurance premium'], category: 'Investment' },
   { keywords: ['church', 'donation', 'tithe', 'offering', 'charity', 'ngo', 'temple', 'mosque', 'daan', 'contribution'], category: 'Donation' },
   { keywords: ['gift', 'birthday gift', 'anniversary gift', 'wedding gift', 'present for'], category: 'Gifts' },
+  { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink'], category: 'Stationary' },
+  { keywords: ['saloon', 'salon', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
+  { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports fee', 'sports kit'], category: 'Gym' },
+];
+
+const ICON_PICKER_OPTIONS = [
+  'category',       'shopping_bag',     'local_grocery_store', 'coffee',
+  'lunch_dining',   'fastfood',         'ramen_dining',        'local_pizza',
+  'directions_car', 'two_wheeler',      'directions_bike',     'hiking',
+  'sports_cricket', 'sports_soccer',    'sports_esports',      'self_improvement',
+  'music_note',     'movie',            'celebration',         'camera_alt',
+  'school',         'work',             'home',                'computer',
+  'phone_android',  'pets',             'child_care',          'favorite',
+  'local_bar',      'spa',              'construction',        'bolt',
+];
+
+const COLOR_PALETTE = [
+  '#EF4444', '#F97316', '#F59E0B', '#EAB308',
+  '#84CC16', '#22C55E', '#10B981', '#06B6D4',
+  '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6',
+  '#A855F7', '#D946EF', '#EC4899', '#F43F5E',
+  '#64748B', '#0284C7',
 ];
 
 const CHART_COLORS = [
@@ -78,7 +106,8 @@ const DEFAULT_DATA = {
     darkMode: false,
     currency: '₹',
     defaultSalary: 0,
-    budgetAllocations: null, // null means use DEFAULT_BUDGET_ALLOCATIONS
+    budgetAllocations: null,
+    customCategoryMeta: {},
   },
   categories: [...DEFAULT_CATEGORIES],
   months: {},
@@ -99,6 +128,9 @@ let customRangeFrom = null;
 let customRangeTo = null;
 let expenseSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first
 let editingExpenseId = null;
+let newCatIcon = 'category';
+let newCatColor = '#64748B';
+let editingCatName = null;
 let deleteTarget = null;
 let deleteContext = null;
 
@@ -210,7 +242,9 @@ function getGreeting() {
 }
 
 function getCatMeta(category) {
-  return CATEGORY_META[category] || { icon: 'category', color: '#64748B' };
+  if (CATEGORY_META[category]) return CATEGORY_META[category];
+  if (appData?.settings?.customCategoryMeta?.[category]) return appData.settings.customCategoryMeta[category];
+  return { icon: 'category', color: '#64748B' };
 }
 
 function getCatColor(category, allCats) {
@@ -334,6 +368,7 @@ async function loadData() {
       currency: raw.currency ?? '₹',
       defaultSalary: raw.default_salary ?? 0,
       budgetAllocations: raw.budget_allocations ?? null,
+      customCategoryMeta: raw.custom_category_meta ?? {},
     } : deepClone(DEFAULT_DATA.settings);
 
     const categories = raw?.categories ?? [...DEFAULT_CATEGORIES];
@@ -381,6 +416,7 @@ function syncSettings() {
     default_salary: appData.settings.defaultSalary,
     budget_allocations: appData.settings.budgetAllocations,
     categories: appData.categories,
+    custom_category_meta: appData.settings.customCategoryMeta || {},
   }).then(({ error }) => {
     if (error) showToast('Cloud sync error. Changes may not be saved.', 'error');
   });
@@ -608,14 +644,14 @@ function filterExpenses(expenses, filter, from, to, catFilter, search) {
   });
 }
 
-function groupExpensesByDate(expenses) {
+function groupExpensesByDate(expenses, dir = 'desc') {
   const groups = {};
   expenses.forEach(e => {
     if (!groups[e.date]) groups[e.date] = [];
     groups[e.date].push(e);
   });
   return Object.entries(groups)
-    .sort(([a], [b]) => b.localeCompare(a))
+    .sort(([a], [b]) => dir === 'desc' ? b.localeCompare(a) : a.localeCompare(b))
     .map(([date, exps]) => ({ date, expenses: exps }));
 }
 
@@ -1107,7 +1143,7 @@ function renderExpenses() {
 
   emptyEl.style.display = 'none';
 
-  const groups = groupExpensesByDate(filtered);
+  const groups = groupExpensesByDate(filtered, expenseSortDir);
   container.innerHTML = groups.map(({ date, expenses }) => {
     const groupTotal = expenses.reduce((s, e) => s + e.amount, 0);
     const dateLabel = buildDateLabel(date);
@@ -1192,19 +1228,22 @@ function attachExpenseItemEvents(container) {
 function renderCategoryChips() {
   const bar = document.getElementById('cat-chips-bar');
   if (!bar) return;
-  const cats = ['all', ...appData.categories];
+  const sorted = [...appData.categories].sort((a, b) => a.localeCompare(b));
+  const cats = ['all', ...sorted];
   bar.innerHTML = cats.map(cat => {
     const meta = cat === 'all' ? null : getCatMeta(cat);
     const isActive = activeCatFilter === cat;
-    const style = isActive && meta ? `background:${meta.color};border-color:${meta.color}` : '';
-    return `
-      <button class="cat-chip${isActive ? ' active' : ''}"
-        data-cat="${escapeHtml(cat)}"
-        style="${style}"
-        aria-pressed="${isActive}"
-      >
-        ${cat === 'all' ? 'All' : escapeHtml(cat)}
-      </button>`;
+    const color = meta?.color || '#64748B';
+    const icon = meta?.icon || 'category';
+    const bgStyle = isActive
+      ? (cat === 'all'
+          ? `background:var(--color-primary);border-color:var(--color-primary)`
+          : `background:${color};border-color:${color}`)
+      : '';
+    const iconHtml = cat === 'all'
+      ? `<span class="material-symbols-rounded">apps</span>`
+      : `<span class="material-symbols-rounded">${icon}</span>`;
+    return `<button class="cat-chip${isActive ? ' active' : ''}" data-cat="${escapeHtml(cat)}" style="${bgStyle}" aria-pressed="${isActive}">${iconHtml} ${cat === 'all' ? 'All' : escapeHtml(cat)}</button>`;
   }).join('');
 
   bar.querySelectorAll('.cat-chip').forEach(chip => {
@@ -1694,6 +1733,56 @@ function renderSettings() {
 
   // Categories
   renderSettingsCategoryList();
+  renderCatPicker();
+}
+
+function renderCatPicker() {
+  const iconGrid = document.getElementById('cat-icon-grid');
+  const colorPalette = document.getElementById('cat-color-palette');
+  if (!iconGrid || !colorPalette) return;
+
+  iconGrid.innerHTML = ICON_PICKER_OPTIONS.map(icon => `
+    <button type="button" class="cat-icon-btn${icon === newCatIcon ? ' active' : ''}" data-icon="${icon}" title="${icon}" aria-label="${icon}">
+      <span class="material-symbols-rounded" style="font-size:18px">${icon}</span>
+    </button>`).join('');
+
+  colorPalette.innerHTML = COLOR_PALETTE.map(color => `
+    <button type="button" class="cat-color-swatch${color === newCatColor ? ' active' : ''}"
+      data-color="${color}" style="background:${color}" aria-label="Color ${color}">
+    </button>`).join('');
+
+  iconGrid.querySelectorAll('.cat-icon-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      newCatIcon = btn.dataset.icon;
+      iconGrid.querySelectorAll('.cat-icon-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateCatPickerPreview();
+    });
+  });
+
+  colorPalette.querySelectorAll('.cat-color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      newCatColor = sw.dataset.color;
+      colorPalette.querySelectorAll('.cat-color-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      updateCatPickerPreview();
+    });
+  });
+
+  updateCatPickerPreview();
+}
+
+function updateCatPickerPreview() {
+  const nameEl = document.getElementById('cat-preview-name');
+  const iconWrap = document.getElementById('cat-preview-icon');
+  const nameInput = document.getElementById('new-cat-input');
+  if (nameEl) nameEl.textContent = nameInput?.value.trim() || 'Category name';
+  if (iconWrap) {
+    iconWrap.style.background = newCatColor + '20';
+    iconWrap.style.color = newCatColor;
+    const span = iconWrap.querySelector('.material-symbols-rounded');
+    if (span) span.textContent = newCatIcon;
+  }
 }
 
 
@@ -1702,21 +1791,101 @@ function renderSettingsCategoryList() {
   if (!list) return;
   list.innerHTML = appData.categories.map(cat => {
     const isDefault = DEFAULT_CATEGORIES.includes(cat);
+    const isEditing = cat === editingCatName;
     const deleteBtn = !isDefault
       ? `<button class="cat-delete-btn" data-cat="${escapeHtml(cat)}" aria-label="Delete category ${escapeHtml(cat)}">
            <span class="material-symbols-rounded">close</span>
          </button>`
       : '';
     return `
-      <span class="cat-settings-chip${!isDefault ? ' custom' : ''}">
+      <span class="cat-settings-chip${!isDefault ? ' custom' : ''}${isEditing ? ' editing' : ''}">
         ${escapeHtml(cat)}
+        <button class="cat-edit-btn" data-cat="${escapeHtml(cat)}" aria-label="Edit category ${escapeHtml(cat)}">
+          <span class="material-symbols-rounded">edit</span>
+        </button>
         ${deleteBtn}
       </span>`;
   }).join('');
 
+  list.querySelectorAll('.cat-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => startEditCategory(btn.dataset.cat));
+  });
   list.querySelectorAll('.cat-delete-btn').forEach(btn => {
     btn.addEventListener('click', () => deleteCategory(btn.dataset.cat));
   });
+}
+
+function startEditCategory(cat) {
+  editingCatName = cat;
+  const isDefault = DEFAULT_CATEGORIES.includes(cat);
+  const input = document.getElementById('new-cat-input');
+  if (input) {
+    input.value = cat;
+    input.disabled = isDefault;
+    input.placeholder = isDefault ? 'Default — name cannot be changed' : 'Category name';
+  }
+  const meta = getCatMeta(cat);
+  newCatIcon = meta.icon;
+  newCatColor = meta.color;
+  renderCatPicker();
+
+  const addBtn = document.getElementById('add-cat-btn');
+  if (addBtn) addBtn.textContent = 'Update';
+  const cancelBtn = document.getElementById('cancel-cat-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+
+  renderSettingsCategoryList();
+  input?.focus();
+}
+
+function cancelEditCategory() {
+  editingCatName = null;
+  newCatIcon = 'category';
+  newCatColor = '#64748B';
+  const input = document.getElementById('new-cat-input');
+  if (input) { input.value = ''; input.disabled = false; input.placeholder = 'New category name'; }
+  const addBtn = document.getElementById('add-cat-btn');
+  if (addBtn) addBtn.textContent = 'Add';
+  const cancelBtn = document.getElementById('cancel-cat-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  renderCatPicker();
+  renderSettingsCategoryList();
+}
+
+function updateCategory() {
+  if (!editingCatName) return;
+  const isDefault = DEFAULT_CATEGORIES.includes(editingCatName);
+  const input = document.getElementById('new-cat-input');
+  const newName = (!isDefault && input?.value.trim()) ? input.value.trim() : editingCatName;
+
+  if (!isDefault && newName !== editingCatName) {
+    if (newName.length > 30) { showToast('Category name too long (max 30 chars).', 'warning'); return; }
+    if (appData.categories.some(c => c.toLowerCase() === newName.toLowerCase() && c !== editingCatName)) {
+      showToast('Category already exists.', 'warning'); return;
+    }
+    const idx = appData.categories.indexOf(editingCatName);
+    if (idx !== -1) appData.categories[idx] = newName;
+    if (appData.settings.customCategoryMeta?.[editingCatName]) {
+      appData.settings.customCategoryMeta[newName] = appData.settings.customCategoryMeta[editingCatName];
+      delete appData.settings.customCategoryMeta[editingCatName];
+    }
+    Object.values(appData.months).forEach(m => {
+      (m.expenses || []).forEach(e => {
+        if (e.category === editingCatName) {
+          e.category = newName;
+          syncUpdateExpense(e);
+        }
+      });
+    });
+  }
+
+  if (!appData.settings.customCategoryMeta) appData.settings.customCategoryMeta = {};
+  appData.settings.customCategoryMeta[newName] = { icon: newCatIcon, color: newCatColor };
+
+  syncSettings();
+  showToast(`"${newName}" updated!`, 'success');
+  cancelEditCategory();
+  refreshCurrentView();
 }
 
 function updateSidebarMonthLabel() {
@@ -1963,10 +2132,15 @@ function addCategory(name) {
     showToast('Category already exists.', 'warning'); return;
   }
   appData.categories.push(trimmed);
+  if (!appData.settings.customCategoryMeta) appData.settings.customCategoryMeta = {};
+  appData.settings.customCategoryMeta[trimmed] = { icon: newCatIcon, color: newCatColor };
   syncSettings();
   renderSettingsCategoryList();
   showToast(`Category "${trimmed}" added!`, 'success');
   document.getElementById('new-cat-input').value = '';
+  newCatIcon = 'category';
+  newCatColor = '#64748B';
+  renderCatPicker();
 }
 
 function deleteCategory(name) {
@@ -1980,6 +2154,7 @@ function deleteCategory(name) {
     showToast(`"${name}" is used by existing expenses and cannot be deleted.`, 'warning'); return;
   }
   appData.categories = appData.categories.filter(c => c !== name);
+  if (appData.settings.customCategoryMeta) delete appData.settings.customCategoryMeta[name];
   syncSettings();
   renderSettingsCategoryList();
   showToast(`Category "${name}" deleted.`, 'success');
@@ -2353,10 +2528,17 @@ function setupEventListeners() {
   // ── Settings: categories ────────────────────────────────
   const addCatBtn = document.getElementById('add-cat-btn');
   const newCatInput = document.getElementById('new-cat-input');
-  if (addCatBtn) addCatBtn.addEventListener('click', () => addCategory(newCatInput.value));
-  if (newCatInput) newCatInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); addCategory(newCatInput.value); }
+  if (addCatBtn) addCatBtn.addEventListener('click', () => {
+    if (editingCatName) updateCategory(); else addCategory(newCatInput.value);
   });
+  const cancelCatEditBtn = document.getElementById('cancel-cat-edit-btn');
+  if (cancelCatEditBtn) cancelCatEditBtn.addEventListener('click', cancelEditCategory);
+  if (newCatInput) {
+    newCatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); if (editingCatName) updateCategory(); else addCategory(newCatInput.value); }
+    });
+    newCatInput.addEventListener('input', updateCatPickerPreview);
+  }
 
   // ── Settings: export / import / reset ───────────────────
   const exportBtn = document.getElementById('export-btn');

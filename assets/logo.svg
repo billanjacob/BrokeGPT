@@ -1,58 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
   <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+    <radialGradient id="bgGrad" cx="30%" cy="28%" r="72%">
       <stop offset="0%" stop-color="#1e3a8a"/>
-      <stop offset="100%" stop-color="#0c1a3d"/>
-    </linearGradient>
-    <linearGradient id="brainGrad" x1="14" y1="14" x2="60" y2="106" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#e879f9"/>
-      <stop offset="100%" stop-color="#a21caf"/>
-    </linearGradient>
-    <linearGradient id="dollarGrad" x1="60" y1="14" x2="106" y2="106" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#b45309"/>
-    </linearGradient>
-    <!-- Left semicircle clip (counterclockwise arc = left half) -->
-    <clipPath id="leftClip">
-      <path d="M60,14 A46,46 0 0,0 60,106 Z"/>
-    </clipPath>
-    <!-- Right semicircle clip (clockwise arc = right half) -->
-    <clipPath id="rightClip">
-      <path d="M60,14 A46,46 0 0,1 60,106 Z"/>
-    </clipPath>
+      <stop offset="100%" stop-color="#060e1e"/>
+    </radialGradient>
     <filter id="bgShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1D4ED8" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1D4ED8" flood-opacity="0.35"/>
     </filter>
   </defs>
 
   <!-- Background -->
-  <rect width="120" height="120" rx="28" ry="28" fill="url(#bgGrad)" filter="url(#bgShadow)"/>
+  <rect width="120" height="120" rx="26" ry="26" fill="url(#bgGrad)" filter="url(#bgShadow)"/>
 
-  <!-- ── Brain half (left, fuchsia → purple) ─────────── -->
-  <circle cx="60" cy="60" r="46" fill="url(#brainGrad)" clip-path="url(#leftClip)"/>
+  <!-- Subtle top-left blue bloom -->
+  <circle cx="22" cy="22" r="52" fill="#2563EB" opacity="0.09"/>
 
-  <!-- Gyri (brain fold lines) -->
-  <g clip-path="url(#leftClip)" stroke="#86198f" stroke-width="2.3" stroke-linecap="round">
-    <path d="M24,36 C15,50 15,70 25,82"/>
-    <path d="M35,42 C27,56 28,73 38,84"/>
-    <path d="M21,60 C31,59 43,57 55,62"/>
-  </g>
-
-  <!-- Sphere highlight on brain side -->
-  <ellipse cx="46" cy="28" rx="13" ry="7" fill="white" opacity="0.15" clip-path="url(#leftClip)"/>
-
-  <!-- ── Dollar half (right, amber → dark amber) ──────── -->
-  <circle cx="60" cy="60" r="46" fill="url(#dollarGrad)" clip-path="url(#rightClip)"/>
-
-  <!-- $ symbol centred in right semicircle -->
-  <text x="80" y="60"
-        font-family="'Arial Black', Arial, sans-serif"
-        font-size="52" font-weight="900"
-        fill="#431407" opacity="0.88"
+  <!-- B — white, large -->
+  <text x="28" y="60"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="52" font-weight="800"
         text-anchor="middle" dominant-baseline="middle"
-        clip-path="url(#rightClip)">$</text>
+        fill="#ffffff">B</text>
 
-  <!-- ── Divider + border ──────────────────────────────── -->
-  <line x1="60" y1="14" x2="60" y2="106" stroke="white" stroke-width="2.5" opacity="0.85"/>
-  <circle cx="60" cy="60" r="46" stroke="white" stroke-width="2" opacity="0.55"/>
+  <!-- ₹ — gold, smaller, nestled between B and G -->
+  <text x="60" y="60"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="22" font-weight="800"
+        text-anchor="middle" dominant-baseline="middle"
+        fill="#fbbf24">₹</text>
+
+  <!-- G — brand blue, large -->
+  <text x="92" y="60"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="52" font-weight="800"
+        text-anchor="middle" dominant-baseline="middle"
+        fill="#60a5fa">G</text>
+
+  <!-- Gold accent bar -->
+  <rect x="32" y="88" width="56" height="3" rx="1.5" fill="#d97706" opacity="0.8"/>
 </svg>

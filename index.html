@@ -348,7 +348,16 @@
       </div>
 
       <!-- Category Chips Filter -->
-      <div class="cat-chips-bar" id="cat-chips-bar" role="group" aria-label="Filter by category"></div>
+      <div class="cat-chips-wrap">
+        <div class="cat-chips-label">
+          <span class="material-symbols-rounded">filter_list</span>
+          Category
+        </div>
+        <div class="cat-chips-scroll-box">
+          <div class="cat-chips-bar" id="cat-chips-bar" role="group" aria-label="Filter by category"></div>
+          <div class="cat-chips-fade" aria-hidden="true"></div>
+        </div>
+      </div>
 
       <!-- Result Stats -->
       <div class="results-bar">
@@ -651,6 +660,28 @@
               aria-label="New category name"
             />
             <button class="btn btn-primary" id="add-cat-btn">Add</button>
+            <button class="btn btn-ghost" id="cancel-cat-edit-btn" style="display:none">Cancel</button>
+          </div>
+          <div class="cat-picker-preview-row">
+            <span class="cat-picker-label">Preview</span>
+            <div class="cat-picker-preview">
+              <div class="cat-preview-icon" id="cat-preview-icon">
+                <span class="material-symbols-rounded">category</span>
+              </div>
+              <span class="cat-preview-name" id="cat-preview-name">Category name</span>
+            </div>
+          </div>
+          <div class="cat-picker-wrap">
+            <div class="cat-picker-columns">
+              <div class="cat-picker-section">
+                <div class="cat-picker-label">Icon</div>
+                <div class="cat-icon-grid" id="cat-icon-grid"></div>
+              </div>
+              <div class="cat-picker-section">
+                <div class="cat-picker-label">Color</div>
+                <div class="cat-color-palette" id="cat-color-palette"></div>
+              </div>
+            </div>
           </div>
           <div id="settings-cat-list" class="cat-settings-chips" aria-label="Categories list"></div>
         </div>
