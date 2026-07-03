@@ -364,7 +364,14 @@
             <span class="material-symbols-rounded">chevron_right</span>
           </button>
         </div>
-        <select class="cat-filter-select" id="cat-filter-select" aria-label="Filter by category"></select>
+        <div class="cat-filter-dropdown" id="cat-filter-dropdown">
+          <button class="cat-filter-btn" id="cat-filter-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="material-symbols-rounded cat-filter-btn-icon" id="cat-filter-btn-icon">apps</span>
+            <span class="cat-filter-btn-label" id="cat-filter-btn-label">All Categories</span>
+            <span class="material-symbols-rounded cat-filter-arrow">expand_more</span>
+          </button>
+          <div class="cat-filter-menu" id="cat-filter-menu" role="listbox" aria-label="Filter by category"></div>
+        </div>
       </div>
 
       <!-- Result Stats -->

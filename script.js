@@ -1303,10 +1303,10 @@ function attachExpenseItemEvents(container) {
 
 function renderCategoryChips() {
   const bar = document.getElementById('cat-chips-bar');
-  const sel = document.getElementById('cat-filter-select');
   const sorted = [...appData.categories].sort((a, b) => a.localeCompare(b));
   const cats = ['all', ...sorted];
 
+  // Desktop chip bar
   if (bar) {
     bar.innerHTML = cats.map(cat => {
       const meta = cat === 'all' ? null : getCatMeta(cat);
@@ -1332,14 +1332,49 @@ function renderCategoryChips() {
     });
   }
 
-  if (sel) {
-    sel.innerHTML = cats.map(cat =>
-      `<option value="${escapeHtml(cat)}"${activeCatFilter === cat ? ' selected' : ''}>${cat === 'all' ? 'All Categories' : escapeHtml(cat)}</option>`
-    ).join('');
-    sel.onchange = () => {
-      activeCatFilter = sel.value;
-      renderExpenses();
-    };
+  // Mobile custom dropdown
+  const dropdown = document.getElementById('cat-filter-dropdown');
+  const menu = document.getElementById('cat-filter-menu');
+  const btnLabel = document.getElementById('cat-filter-btn-label');
+  const btnIcon = document.getElementById('cat-filter-btn-icon');
+  const btn = document.getElementById('cat-filter-btn');
+
+  if (menu && dropdown) {
+    const activeMeta = activeCatFilter === 'all' ? null : getCatMeta(activeCatFilter);
+    if (btnLabel) btnLabel.textContent = activeCatFilter === 'all' ? 'All Categories' : activeCatFilter;
+    if (btnIcon) btnIcon.textContent = activeCatFilter === 'all' ? 'apps' : (activeMeta?.icon || 'category');
+
+    menu.innerHTML = cats.map(cat => {
+      const meta = cat === 'all' ? null : getCatMeta(cat);
+      const icon = cat === 'all' ? 'apps' : (meta?.icon || 'category');
+      const isActive = activeCatFilter === cat;
+      return `<button class="cat-filter-option${isActive ? ' active' : ''}" data-cat="${escapeHtml(cat)}">
+        <span class="material-symbols-rounded">${icon}</span>
+        ${cat === 'all' ? 'All Categories' : escapeHtml(cat)}
+      </button>`;
+    }).join('');
+
+    menu.querySelectorAll('.cat-filter-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        activeCatFilter = opt.dataset.cat;
+        dropdown.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        renderExpenses();
+      });
+    });
+
+    if (!dropdown._listenerAttached) {
+      dropdown._listenerAttached = true;
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(isOpen));
+      });
+      document.addEventListener('click', () => {
+        dropdown.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+    }
   }
 }
 
