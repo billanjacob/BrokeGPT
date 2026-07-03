@@ -1294,8 +1294,11 @@ body.sidebar-collapsed .main-content {
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+  max-height: 240px;
+  overflow-y: auto;
 }
 
 .cat-chips-label {
@@ -1346,6 +1349,32 @@ body.sidebar-collapsed .main-content {
 }
 
 .cat-chips-bar::-webkit-scrollbar { display: none; }
+
+.cat-chips-scroll-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -4px 0 8px var(--surface);
+  transition: background var(--transition), color var(--transition);
+  z-index: 2;
+}
+.cat-chips-scroll-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.cat-chips-scroll-btn .material-symbols-rounded { font-size: 18px; }
 
 .cat-chip {
   display: inline-flex;
