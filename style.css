@@ -685,6 +685,7 @@ body.sidebar-collapsed .main-content {
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+  flex: 1;
 }
 
 .mini-cat-dot {
@@ -735,6 +736,90 @@ body.sidebar-collapsed .main-content {
 
 /* Grouped expenses */
 .expenses-grouped { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.expenses-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.expense-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.expense-tile:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.expense-tile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-3);
+}
+
+.expense-tile-icon .material-symbols-rounded {
+  font-size: 28px;
+}
+
+.expense-tile-amount {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.expense-tile-body {
+  padding: 0 var(--space-3) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.expense-tile-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expense-tile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--space-1);
+}
+
+.expense-tile-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.expense-tile:hover .expense-tile-actions { opacity: 1; }
+
+.expense-tile-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.expense-tile-date {
+  font-size: var(--text-xs);
+  color: var(--text-3);
+  white-space: nowrap;
+}
 
 .expense-group {}
 
@@ -1426,6 +1511,12 @@ body.sidebar-collapsed .main-content {
   justify-content: space-between;
   margin-bottom: var(--space-3);
   padding: 0 var(--space-1);
+}
+
+.results-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .results-count {

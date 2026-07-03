@@ -221,13 +221,13 @@
         </div>
 
         <div class="stat-card" role="listitem">
-          <div class="stat-icon success" id="stat-budget-health-icon" aria-hidden="true">
-            <span class="material-symbols-rounded">health_and_safety</span>
+          <div class="stat-icon warning" aria-hidden="true">
+            <span class="material-symbols-rounded">price_check</span>
           </div>
           <div class="stat-body">
-            <div class="stat-label">Budget Remaining</div>
-            <div class="stat-value" id="stat-budget-remaining">₹0</div>
-            <div class="stat-sub" id="stat-budget-health">Set salary to calculate</div>
+            <div class="stat-label">50% Rule Left</div>
+            <div class="stat-value" id="stat-nonloan-remaining">₹0</div>
+            <div class="stat-sub" id="stat-nonloan-sub">Set salary to calculate</div>
           </div>
         </div>
 
@@ -366,10 +366,15 @@
       <div class="results-bar">
         <span class="results-count" id="results-count">0 expenses</span>
         <span class="results-total" id="results-total">Total: ₹0</span>
-        <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Sort by date">
-          <span class="material-symbols-rounded">arrow_downward</span>
-          <span id="sort-date-label">Newest</span>
-        </button>
+        <div class="results-bar-actions">
+          <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Sort by date">
+            <span class="material-symbols-rounded">arrow_downward</span>
+            <span id="sort-date-label">Newest</span>
+          </button>
+          <button class="icon-btn" id="expense-view-toggle" aria-label="Toggle tile view" title="Toggle tile view">
+            <span class="material-symbols-rounded" id="expense-view-icon">grid_view</span>
+          </button>
+        </div>
       </div>
 
       <!-- Grouped Expense List -->

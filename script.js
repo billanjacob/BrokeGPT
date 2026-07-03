@@ -44,13 +44,15 @@ const CATEGORY_META = {
 };
 
 const NAME_CATEGORY_RULES = [
-  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'diner', 'dining', 'eatery', 'mess', 'canteen', 'food court', 'ikka', 'midtown'], category: 'Restaurant' },
-  { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie'], category: 'Bakery' },
+  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'diner', 'dining', 'eatery', 'mess', 'canteen', 'food court', 'ikka', 'midtown', 'food'], category: 'Restaurant' },
+  { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie', 'ice', 'incha'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
   { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack'], category: 'Internet' },
   { keywords: ['electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'maintenance'], category: 'Bills' },
-  { keywords: ['netflix', 'hotstar', 'spotify', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
+  { keywords: ['netflix', 'hotstar', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
+  { keywords: ['spotify', 'Spotify',], category: 'Spotify' },
+  { keywords: ['unknown', 'Unkown',], category: 'Other' },
   { keywords: ['hospital', 'clinic', 'pharmacy', 'medicine', 'doctor', 'apollo', 'medplus', 'blood test', 'xray', 'scan', 'medical', 'tablet', 'syrup', 'injection', 'health', 'dental', 'dentist', 'lab test', 'diagnostic'], category: 'Medical' },
   { keywords: ['uber', 'ola cab', 'metro', 'irctc', 'redbus', 'rapido', 'flight', 'indigo', 'air india', 'spicejet', 'bus ticket', 'train ticket', 'toll', 'highway', 'travel', 'cab', 'taxi', 'auto ride', 'airport', 'hotel stay'], category: 'Travel' },
   { keywords: ['emi', 'loan emi', 'home loan', 'car loan', 'personal loan', 'bajaj finance', 'hdfc loan', 'icici loan', 'axis loan', 'equitas', 'credit emi'], category: 'EMI' },
@@ -60,7 +62,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['grocery', 'groceries', 'supermarket', 'dmart', 'bigbasket', 'blinkit', 'zepto', 'jiomart', 'more supermarket', 'reliance fresh', 'nature basket', 'vegetables', 'fruits', 'rice', 'dal', 'wheat', 'atta', 'oil', 'milk', 'eggs', 'provisions'], category: 'Groceries' },
   { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'hair', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
-  { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports'], category: 'Gym' },
+  { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports', 'mma'], category: 'Gym' },
 ];
 
 const ICON_PICKER_OPTIONS = [
@@ -129,6 +131,7 @@ let searchQuery = '';
 let customRangeFrom = null;
 let customRangeTo = null;
 let expenseSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first
+let expenseViewMode = localStorage.getItem('expenseViewMode') || 'list'; // 'list' | 'tile'
 let editingExpenseId = null;
 let newCatIcon = 'category';
 let newCatColor = '#64748B';
@@ -577,16 +580,24 @@ function calcMonthStats(monthId) {
   const totalSpent = expenses.reduce((s, e) => s + e.amount, 0);
   const remaining = Math.max(0, salary - totalSpent);
   const savings = salary - totalSpent;
-  const pctSpent = salary > 0 ? Math.min(100, (totalSpent / salary) * 100) : 0;
+  const pctSpent = salary > 0 ? (totalSpent / salary) * 100 : 0;
   const isCurrentMonth = monthId === getCurrentMonthId();
   const daysInMon = getDaysInMonth(month.year, month.month);
   const dayOfMon = isCurrentMonth ? getDayOfMonth() : daysInMon;
   const daysRemain = isCurrentMonth ? getDaysRemainingInMonth() : 0;
   const dailyLimit = daysRemain > 0 ? remaining / daysRemain : 0;
+  // 50% rule: non-loan expenses should stay under half of salary
+  const nonLoanSpent = expenses
+    .filter(e => !e.category.toLowerCase().includes('loan'))
+    .reduce((s, e) => s + e.amount, 0);
+  const halfSalary = salary * 0.5;
+  const nonLoanRemaining = halfSalary - nonLoanSpent;
+  const nonLoanPct = halfSalary > 0 ? (nonLoanSpent / halfSalary) * 100 : 0;
   return {
     salary, totalSpent, remaining, savings,
     percentSpent: pctSpent, dailyLimit, daysRemaining: daysRemain,
     count: expenses.length, dayOfMonth: dayOfMon, daysInMonth: daysInMon,
+    nonLoanSpent, nonLoanRemaining, nonLoanPct, halfSalary,
   };
 }
 
@@ -1017,11 +1028,32 @@ function renderDashboard() {
       ? `${formatCurrency(stats.dailyLimit)}/day — ${stats.daysRemaining} days left`
       : 'Set salary to calculate';
 
-  document.getElementById('stat-savings').textContent = formatFullAmount(stats.savings);
+  const savingsEl = document.getElementById('stat-savings');
+  savingsEl.className = 'stat-value';
+  savingsEl.textContent = (stats.savings < 0 ? '-' : '') + formatFullAmount(stats.savings);
+  if (stats.salary > 0 && stats.savings < 0) savingsEl.classList.add('danger');
   const savingsPct = stats.salary > 0
     ? Math.round((stats.savings / stats.salary) * 100)
     : 0;
   document.getElementById('stat-savings-pct').textContent = `${savingsPct}% of salary`;
+
+  // 50% rule card (non-loan expenses vs half salary)
+  const nlRemEl = document.getElementById('stat-nonloan-remaining');
+  if (nlRemEl) {
+    nlRemEl.className = 'stat-value';
+    if (stats.salary > 0) {
+      const nlPct = Math.round(stats.nonLoanPct);
+      nlRemEl.textContent = (stats.nonLoanRemaining < 0 ? '-' : '') + formatFullAmount(stats.nonLoanRemaining);
+      if (nlPct >= 100) nlRemEl.classList.add('danger');
+      else if (nlPct >= 80) nlRemEl.classList.add('warning');
+      else nlRemEl.classList.add('success');
+      document.getElementById('stat-nonloan-sub').textContent =
+        `${nlPct}% of ${formatCurrency(stats.halfSalary)} used · excl. loans`;
+    } else {
+      nlRemEl.textContent = '₹0';
+      document.getElementById('stat-nonloan-sub').textContent = 'Set salary to calculate';
+    }
+  }
 
   // Colour remaining card based on health
   const remainingVal = document.getElementById('stat-remaining');
@@ -1066,9 +1098,11 @@ function renderDashboard() {
         <div class="mini-item">
           <div class="mini-item-left">
             <span class="mini-cat-dot" style="background:${meta.color}" aria-hidden="true"></span>
-            <div>
+            <div style="flex:1;min-width:0;width:100%">
               <div class="mini-item-name">${escapeHtml(cat)}</div>
-              <div class="mini-item-sub" style="width:${barW}%;height:3px;background:${meta.color};border-radius:9999px;margin-top:3px"></div>
+              <div style="width:100%;background:var(--border);border-radius:9999px;margin-top:4px;height:6px;overflow:hidden">
+                <div style="width:${barW}%;height:6px;background:${meta.color};border-radius:9999px"></div>
+              </div>
             </div>
           </div>
           <span class="mini-item-amount">${formatCurrency(amt)}</span>
@@ -1145,21 +1179,31 @@ function renderExpenses() {
 
   emptyEl.style.display = 'none';
 
-  const groups = groupExpensesByDate(filtered, expenseSortDir);
-  container.innerHTML = groups.map(({ date, expenses }) => {
-    const groupTotal = expenses.reduce((s, e) => s + e.amount, 0);
-    const dateLabel = buildDateLabel(date);
-    return `
-      <div class="expense-group">
-        <div class="expense-group-header">
-          <span class="expense-group-date">${dateLabel}</span>
-          <span class="expense-group-total">${formatCurrency(groupTotal)}</span>
-        </div>
-        <div class="expense-group-items">
-          ${expenses.map(e => buildExpenseItemHtml(e, false)).join('')}
-        </div>
-      </div>`;
-  }).join('');
+  // Sync view toggle icon
+  const viewIcon = document.getElementById('expense-view-icon');
+  if (viewIcon) viewIcon.textContent = expenseViewMode === 'tile' ? 'view_list' : 'grid_view';
+
+  if (expenseViewMode === 'tile') {
+    container.className = 'expenses-tile-grid';
+    container.innerHTML = filtered.map(e => buildExpenseTileHtml(e)).join('');
+  } else {
+    container.className = 'expenses-grouped';
+    const groups = groupExpensesByDate(filtered, expenseSortDir);
+    container.innerHTML = groups.map(({ date, expenses }) => {
+      const groupTotal = expenses.reduce((s, e) => s + e.amount, 0);
+      const dateLabel = buildDateLabel(date);
+      return `
+        <div class="expense-group">
+          <div class="expense-group-header">
+            <span class="expense-group-date">${dateLabel}</span>
+            <span class="expense-group-total">${formatCurrency(groupTotal)}</span>
+          </div>
+          <div class="expense-group-items">
+            ${expenses.map(e => buildExpenseItemHtml(e, false)).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
 
   attachExpenseItemEvents(container);
 }
@@ -1210,6 +1254,37 @@ function buildExpenseItemHtml(e, compact) {
           <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(e.id)}" aria-label="Delete expense ${escapeHtml(e.name)}">
             <span class="material-symbols-rounded">delete</span>
           </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildExpenseTileHtml(e) {
+  const meta = getCatMeta(e.category);
+  return `
+    <div class="expense-tile" data-id="${escapeHtml(e.id)}">
+      <div class="expense-tile-header" style="background:${meta.color}18">
+        <div class="expense-tile-icon" style="color:${meta.color}">
+          <span class="material-symbols-rounded">${meta.icon}</span>
+        </div>
+        <div class="expense-tile-amount">${formatCurrency(e.amount)}</div>
+      </div>
+      <div class="expense-tile-body">
+        <div class="expense-tile-name">${escapeHtml(e.name)}</div>
+        <div class="expense-tile-meta">
+          <span class="expense-cat-label">${escapeHtml(e.category)}</span>
+          <span class="expense-tile-date">${formatDateShort(e.date)}</span>
+        </div>
+        <div class="expense-tile-footer">
+          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : ''}">${escapeHtml(e.mode)}</span>` : ''}</span>
+          <div class="expense-tile-actions">
+            <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit ${escapeHtml(e.name)}">
+              <span class="material-symbols-rounded">edit</span>
+            </button>
+            <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(e.id)}" aria-label="Delete ${escapeHtml(e.name)}">
+              <span class="material-symbols-rounded">delete</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -2472,6 +2547,13 @@ function setupEventListeners() {
 
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => setModeToggle(btn.dataset.mode));
+  });
+
+  const expViewToggle = document.getElementById('expense-view-toggle');
+  if (expViewToggle) expViewToggle.addEventListener('click', () => {
+    expenseViewMode = expenseViewMode === 'list' ? 'tile' : 'list';
+    localStorage.setItem('expenseViewMode', expenseViewMode);
+    renderExpenses();
   });
 
   const catScrollBtn = document.getElementById('cat-chips-scroll-btn');
