@@ -347,6 +347,7 @@ canvas { display: block; }
   display: flex;
   flex-direction: column;
   padding-bottom: env(safe-area-inset-bottom);
+  transition: margin-left var(--dur-slow) var(--ease);
 }
 
 /* ── App Header ───────────────────────────────────────── */
@@ -367,9 +368,17 @@ canvas { display: block; }
 }
 
 .menu-toggle-btn {
-  display: none;
+  display: flex;
   color: var(--text-2);
   flex-shrink: 0;
+}
+
+/* Desktop sidebar collapse */
+body.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+body.sidebar-collapsed .main-content {
+  margin-left: 0;
 }
 
 
@@ -381,26 +390,19 @@ canvas { display: block; }
   flex-shrink: 0;
 }
 
-/* ── Month Navigation Bar ────────────────────────────── */
-.month-nav-bar {
+.header-month-nav {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-6);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: var(--header-h);
-  z-index: 40;
-  transition: background var(--dur-slow) var(--ease);
+  gap: var(--space-1);
 }
 
 .month-nav-title {
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-1);
-  min-width: 140px;
+  min-width: 130px;
   text-align: center;
   letter-spacing: -0.01em;
 }

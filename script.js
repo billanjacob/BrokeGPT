@@ -671,11 +671,6 @@ function navigateTo(viewName) {
 
   closeSidebar();
 
-  // Show month nav on month-specific views, hide on others
-  const monthNavBar = document.getElementById('month-nav-bar');
-  if (monthNavBar) {
-    monthNavBar.style.display = ['dashboard', 'expenses', 'budget'].includes(viewName) ? 'flex' : 'none';
-  }
   updateMonthNav();
 
   if (viewName === 'dashboard') renderDashboard();
@@ -709,6 +704,16 @@ function closeSidebar() {
   overlay.classList.remove('active');
   toggle.setAttribute('aria-expanded', 'false');
   setTimeout(() => { if (!sidebar.classList.contains('open')) overlay.style.display = 'none'; }, 300);
+}
+
+function toggleSidebar() {
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open')) closeSidebar();
+    else openSidebar();
+  } else {
+    document.body.classList.toggle('sidebar-collapsed');
+  }
 }
 
 /* ============================================================
@@ -1730,7 +1735,17 @@ function openAddExpenseModal() {
   setModeToggle('GPay');
 
   const dateInput = document.getElementById('exp-date');
-  dateInput.value = getTodayStr();
+  const today = getTodayStr();
+  const todayMonth = today.slice(0, 7);
+  if (currentMonthId === todayMonth) {
+    dateInput.value = today;
+  } else if (currentMonthId < todayMonth) {
+    const [y, m] = currentMonthId.split('-').map(Number);
+    const lastDay = new Date(y, m, 0).getDate();
+    dateInput.value = `${currentMonthId}-${String(lastDay).padStart(2, '0')}`;
+  } else {
+    dateInput.value = `${currentMonthId}-01`;
+  }
   document.getElementById('exp-amount-prefix').textContent = appData.settings.currency || '₹';
 
   openModal('modal-expense');
@@ -2090,7 +2105,7 @@ function setupEventListeners() {
   const menuToggle = document.getElementById('menu-toggle');
   const sidebarClose = document.getElementById('sidebar-close');
   const overlay = document.getElementById('sidebar-overlay');
-  if (menuToggle) menuToggle.addEventListener('click', openSidebar);
+  if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
   if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
   if (overlay) overlay.addEventListener('click', closeSidebar);
 
@@ -2317,7 +2332,7 @@ function setupEventListeners() {
   // ── Modal overlay close on backdrop click ───────────────
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
-      if (e.target === overlay) closeAllModals();
+      if (e.target === overlay && overlay.id !== 'modal-expense') closeAllModals();
     });
   });
 

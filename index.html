@@ -71,9 +71,6 @@
         <span class="brand-tagline">Powered by regret.</span>
       </div>
     </div>
-    <button class="icon-btn sidebar-close-btn" id="sidebar-close" aria-label="Close sidebar">
-      <span class="material-symbols-rounded">close</span>
-    </button>
   </div>
 
   <nav class="sidebar-nav" role="navigation" aria-label="App sections">
@@ -126,23 +123,22 @@
       <span class="material-symbols-rounded">menu</span>
     </button>
 
+    <div class="header-month-nav" aria-label="Month navigation">
+      <button class="icon-btn month-nav-btn" id="month-prev-btn" aria-label="Previous month">
+        <span class="material-symbols-rounded">chevron_left</span>
+      </button>
+      <span class="month-nav-title" id="month-nav-label" aria-live="polite">Loading…</span>
+      <button class="icon-btn month-nav-btn" id="month-next-btn" aria-label="Next month">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </button>
+    </div>
+
     <div class="header-right">
       <button class="icon-btn" id="toggle-dark-mode" aria-label="Toggle dark mode (Ctrl+D)" title="Toggle dark mode (Ctrl+D)">
         <span class="material-symbols-rounded" id="dark-mode-icon">dark_mode</span>
       </button>
     </div>
   </header>
-
-  <!-- ---- Month Navigation Bar ---- -->
-  <div class="month-nav-bar" id="month-nav-bar" aria-label="Month navigation" style="display:none">
-    <button class="icon-btn month-nav-btn" id="month-prev-btn" aria-label="Previous month">
-      <span class="material-symbols-rounded">chevron_left</span>
-    </button>
-    <span class="month-nav-title" id="month-nav-label" aria-live="polite">Loading…</span>
-    <button class="icon-btn month-nav-btn" id="month-next-btn" aria-label="Next month">
-      <span class="material-symbols-rounded">chevron_right</span>
-    </button>
-  </div>
 
   <!-- ---- Views Container ---- -->
   <div class="views-container">
