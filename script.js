@@ -132,6 +132,8 @@ let customRangeFrom = null;
 let customRangeTo = null;
 let expenseSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first
 let expenseViewMode = localStorage.getItem('expenseViewMode') || 'list'; // 'list' | 'tile'
+let trendFromMonth = '';
+let trendToMonth = '';
 let editingExpenseId = null;
 let newCatIcon = 'category';
 let newCatColor = '#64748B';
@@ -588,7 +590,7 @@ function calcMonthStats(monthId) {
   const dailyLimit = daysRemain > 0 ? remaining / daysRemain : 0;
   // 50% rule: non-loan expenses should stay under half of salary
   const nonLoanSpent = expenses
-    .filter(e => !e.category.toLowerCase().includes('loan'))
+    .filter(e => !e.name.toLowerCase().includes('loan'))
     .reduce((s, e) => s + e.amount, 0);
   const halfSalary = salary * 0.5;
   const nonLoanRemaining = halfSalary - nonLoanSpent;
@@ -623,6 +625,18 @@ function getLastNMonths(n) {
   return result;
 }
 
+function getMonthsInRange(from, to) {
+  const result = [];
+  let [fy, fm] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  while (fy < ty || (fy === ty && fm <= tm)) {
+    result.push(`${fy}-${String(fm).padStart(2, '0')}`);
+    fm++;
+    if (fm > 12) { fm = 1; fy++; }
+  }
+  return result;
+}
+
 /* ============================================================
    FILTERING
    ============================================================ */
@@ -643,6 +657,7 @@ function filterExpenses(expenses, filter, from, to, catFilter, search) {
       if (from && e.date < from) return false;
       if (to && e.date > to) return false;
     }
+    // 'month' and 'all' pass through — month is already scoped by renderExpenses
     // Category filter
     if (catFilter && catFilter !== 'all' && e.category !== catFilter) return false;
     // Search
@@ -751,6 +766,7 @@ function navigateTo(viewName) {
   if (viewName === 'dashboard') renderDashboard();
   if (viewName === 'expenses') renderExpenses();
   if (viewName === 'analytics') renderAnalytics();
+  if (viewName === 'trends') renderTrends();
   if (viewName === 'budget') renderBudgetPlanner();
   if (viewName === 'history') renderHistory();
   if (viewName === 'settings') renderSettings();
@@ -1135,7 +1151,9 @@ function renderDashboard() {
 
 function renderExpenses() {
   const month = appData.months[currentMonthId];
-  const allExpenses = month ? [...(month.expenses || [])] : [];
+  const allExpenses = activeTimeFilter === 'all'
+    ? Object.values(appData.months).flatMap(m => m.expenses || [])
+    : month ? [...(month.expenses || [])] : [];
 
   // Sort by date (direction controlled by expenseSortDir)
   allExpenses.sort((a, b) => {
@@ -1229,6 +1247,9 @@ function buildExpenseItemHtml(e, compact) {
   const noteTag = e.note && !compact
     ? `<span class="expense-note-label">${escapeHtml(e.note)}</span>`
     : '';
+  const excludedTag = e.name.toLowerCase().includes('loan')
+    ? `<span class="expense-excl-badge">Excl. 50%</span>`
+    : '';
   return `
     <div class="expense-item" data-id="${escapeHtml(e.id)}">
       <div class="expense-cat-icon" style="background:${meta.color}18;color:${meta.color}" aria-hidden="true">
@@ -1241,6 +1262,7 @@ function buildExpenseItemHtml(e, compact) {
           <span class="expense-dot" aria-hidden="true"></span>
           <span class="expense-date-label">${compact ? formatDateShort(e.date) : formatDate(e.date)}</span>
           <span class="expense-mode-badge ${(e.mode || 'Cash') === 'Cash' ? 'cash' : (e.mode || '') === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode || 'Cash')}</span>
+          ${excludedTag}
           ${noteTag}
         </div>
       </div>
@@ -1260,6 +1282,9 @@ function buildExpenseItemHtml(e, compact) {
 
 function buildExpenseTileHtml(e) {
   const meta = getCatMeta(e.category);
+  const excludedTag = e.name.toLowerCase().includes('loan')
+    ? `<span class="expense-excl-badge">Excl. 50%</span>`
+    : '';
   return `
     <div class="expense-tile" data-id="${escapeHtml(e.id)}">
       <div class="expense-tile-header" style="background:${meta.color}18">
@@ -1275,7 +1300,7 @@ function buildExpenseTileHtml(e) {
           <span class="expense-tile-date">${formatDateShort(e.date)}</span>
         </div>
         <div class="expense-tile-footer">
-          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : e.mode === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode)}</span>` : ''}</span>
+          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : e.mode === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode)}</span>` : ''}${excludedTag}</span>
           <div class="expense-tile-actions">
             <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit ${escapeHtml(e.name)}">
               <span class="material-symbols-rounded">edit</span>
@@ -1452,6 +1477,173 @@ function renderCategoryTable() {
         <div class="cat-table-amount">${formatCurrency(amt)}</div>
         <div class="cat-table-pct">${pct}%</div>
       </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   TRENDS VIEW
+   ============================================================ */
+
+function renderTrends() {
+  const curMonthId = getCurrentMonthId();
+  const curYear = new Date().getFullYear();
+
+  // Build full selectable range: earliest of (Jan current year, oldest data month) → current month
+  const allDataMonths = Object.keys(appData.months).sort();
+  const defaultFrom = `${curYear}-01`;
+  const earliest = allDataMonths.length > 0 && allDataMonths[0] < defaultFrom
+    ? allDataMonths[0]
+    : defaultFrom;
+
+  // Clamp state
+  if (!trendFromMonth || trendFromMonth < earliest) trendFromMonth = defaultFrom;
+  if (!trendToMonth || trendToMonth > curMonthId) trendToMonth = curMonthId;
+  if (trendFromMonth > trendToMonth) trendFromMonth = trendToMonth;
+
+  const selectableMonths = getMonthsInRange(earliest, curMonthId);
+
+  const monthOptions = selectableMonths
+    .map(mid => `<option value="${mid}">${formatMonthName(mid)}</option>`)
+    .join('');
+
+  const fromSel = document.getElementById('trends-from-select');
+  const toSel = document.getElementById('trends-to-select');
+  if (fromSel) { fromSel.innerHTML = monthOptions; fromSel.value = trendFromMonth; }
+  if (toSel)   { toSel.innerHTML = monthOptions;   toSel.value = trendToMonth;   }
+
+  // Aggregate data across range
+  const rangeMonths = getMonthsInRange(trendFromMonth, trendToMonth);
+  const monthBadge = document.getElementById('tr-months-badge');
+  if (monthBadge) monthBadge.textContent = `${rangeMonths.length} month${rangeMonths.length !== 1 ? 's' : ''}`;
+
+  const rangeLabel = rangeMonths.length === 1
+    ? formatMonthName(rangeMonths[0])
+    : `${formatMonthShort(rangeMonths[0])} – ${formatMonthShort(rangeMonths[rangeMonths.length - 1])}`;
+  const rangeLabelEl = document.getElementById('tr-range-label');
+  if (rangeLabelEl) rangeLabelEl.textContent = rangeLabel;
+
+  let totalSalary = 0;
+  let totalSpent = 0;
+  let totalCount = 0;
+  const catTotals = {};
+  const monthlyData = {};
+
+  rangeMonths.forEach(mid => {
+    const month = appData.months[mid];
+    monthlyData[mid] = {};
+    if (month) {
+      totalSalary += month.salary || 0;
+      (month.expenses || []).forEach(e => {
+        totalSpent += e.amount;
+        totalCount++;
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+        monthlyData[mid][e.category] = (monthlyData[mid][e.category] || 0) + e.amount;
+      });
+    }
+  });
+
+  const numMonths = rangeMonths.length || 1;
+  document.getElementById('tr-spent').textContent = formatFullAmount(totalSpent);
+  document.getElementById('tr-salary').textContent = formatFullAmount(totalSalary);
+  document.getElementById('tr-count').textContent = totalCount;
+  document.getElementById('tr-avg').textContent = formatCurrency(totalSpent / numMonths);
+
+  const pct = totalSalary > 0 ? Math.round((totalSpent / totalSalary) * 100) : 0;
+  const pctEl = document.getElementById('tr-pct');
+  if (pctEl) {
+    pctEl.textContent = `${pct}%`;
+    pctEl.className = `an-value ${pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : 'success'}`;
+  }
+
+  renderTrendsCategoryTable(catTotals, totalSpent, totalSalary);
+  renderTrendsMonthlyTable(rangeMonths, monthlyData, catTotals);
+}
+
+function renderTrendsCategoryTable(catTotals, totalSpent, totalSalary) {
+  const table = document.getElementById('trends-cat-table');
+  const emptyEl = document.getElementById('trends-empty');
+  if (!table) return;
+
+  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+
+  if (sorted.length === 0) {
+    table.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  const maxAmt = sorted[0][1];
+
+  table.innerHTML = sorted.map(([cat, amt]) => {
+    const meta = getCatMeta(cat);
+    const barPct = maxAmt > 0 ? (amt / maxAmt) * 100 : 0;
+    const pctOfSpend = totalSpent > 0 ? ((amt / totalSpent) * 100).toFixed(1) : '0';
+    const pctOfIncome = totalSalary > 0 ? ((amt / totalSalary) * 100).toFixed(1) + '%' : '—';
+    return `
+      <div class="trends-cat-row">
+        <div class="trc-name">
+          <span class="material-symbols-rounded trc-cat-icon" style="color:${meta.color}" aria-hidden="true">${meta.icon}</span>
+          <span class="trc-cat-label">${escapeHtml(cat)}</span>
+        </div>
+        <div class="trc-bar-col">
+          <div class="trc-bar-track">
+            <div class="trc-bar-fill" style="width:${barPct}%;background:${meta.color}"></div>
+          </div>
+        </div>
+        <div class="trc-amt">${formatFullAmount(amt)}</div>
+        <div class="trc-pct-spend">${pctOfSpend}%</div>
+        <div class="trc-pct-income">${pctOfIncome}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderTrendsMonthlyTable(rangeMonths, monthlyData, catTotals) {
+  const thead = document.getElementById('trends-monthly-thead');
+  const tbody = document.getElementById('trends-monthly-tbody');
+  const card = document.getElementById('trends-monthly-card');
+  const emptyEl = document.getElementById('trends-monthly-empty');
+  if (!thead || !tbody || !card) return;
+
+  const cats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]);
+
+  if (cats.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Find max cell value for heatmap
+  let maxVal = 0;
+  rangeMonths.forEach(mid => {
+    cats.forEach(cat => {
+      const v = (monthlyData[mid] || {})[cat] || 0;
+      if (v > maxVal) maxVal = v;
+    });
+  });
+
+  thead.innerHTML = `<tr>
+    <th class="tmt-cat-col">Category</th>
+    ${rangeMonths.map(mid => `<th class="tmt-month-col">${formatMonthShort(mid)}</th>`).join('')}
+    <th class="tmt-total-col">Total</th>
+  </tr>`;
+
+  tbody.innerHTML = cats.map(cat => {
+    const meta = getCatMeta(cat);
+    const total = catTotals[cat] || 0;
+    const cells = rangeMonths.map(mid => {
+      const v = (monthlyData[mid] || {})[cat] || 0;
+      const intensity = (maxVal > 0 && v > 0) ? Math.min(8, Math.ceil((v / maxVal) * 8)) : 0;
+      return `<td class="tmt-cell" data-intensity="${intensity}" title="${v > 0 ? formatFullAmount(v) : ''}">${v > 0 ? formatCurrency(v) : '—'}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="tmt-cat-cell">
+        <span class="material-symbols-rounded tmt-cat-icon" style="color:${meta.color}" aria-hidden="true">${meta.icon}</span>
+        ${escapeHtml(cat)}
+      </td>
+      ${cells}
+      <td class="tmt-total-cell">${formatFullAmount(total)}</td>
+    </tr>`;
   }).join('');
 }
 
@@ -2022,6 +2214,12 @@ function updateMonthNav() {
   const label = formatMonthName(currentMonthId);
   const el = document.getElementById('month-nav-label');
   if (el) el.textContent = label;
+
+  const nav = document.querySelector('.header-month-nav');
+  if (nav) {
+    const showNav = currentView === 'dashboard' || currentView === 'expenses';
+    nav.style.visibility = showNav ? '' : 'hidden';
+  }
 }
 
 function navigateMonth(delta) {
@@ -2365,32 +2563,6 @@ function importBackup(file) {
   reader.readAsText(file);
 }
 
-/* ============================================================
-   RESET APPLICATION
-   ============================================================ */
-
-function openResetModal() {
-  openModal('modal-reset');
-}
-
-async function handleResetConfirm() {
-  // Clear all rows from Supabase (expenses first due to FK)
-  await db.from('bgpt_expenses').delete().neq('id', '');
-  await db.from('bgpt_months').delete().neq('id', '');
-  await db.from('bgpt_settings').upsert({
-    id: 1, dark_mode: false, currency: '₹', default_salary: 0,
-    budget_allocations: null, categories: [...DEFAULT_CATEGORIES],
-  });
-
-  appData = deepClone(DEFAULT_DATA);
-  currentMonthId = getCurrentMonthId();
-  analyticsMonthId = currentMonthId;
-  ensureMonth(currentMonthId);
-  applyTheme(false);
-  closeModal('modal-reset');
-  showToast('Application reset. Fresh start!', 'info');
-  navigateTo('dashboard');
-}
 
 /* ============================================================
    REFRESH
@@ -2400,6 +2572,7 @@ function refreshCurrentView() {
   if (currentView === 'dashboard') renderDashboard();
   if (currentView === 'expenses') renderExpenses();
   if (currentView === 'analytics') renderAnalytics();
+  if (currentView === 'trends') renderTrends();
   if (currentView === 'budget') renderBudgetPlanner();
   if (currentView === 'history') renderHistory();
   if (currentView === 'settings') renderSettings();
@@ -2681,15 +2854,12 @@ function setupEventListeners() {
   const exportBtn = document.getElementById('export-btn');
   const importBtn = document.getElementById('import-btn');
   const importFile = document.getElementById('import-file');
-  const resetBtn = document.getElementById('reset-btn');
-
   if (exportBtn) exportBtn.addEventListener('click', exportBackup);
   if (importBtn) importBtn.addEventListener('click', () => importFile.click());
   if (importFile) importFile.addEventListener('change', e => {
     importBackup(e.target.files[0]);
     e.target.value = '';
   });
-  if (resetBtn) resetBtn.addEventListener('click', openResetModal);
 
   // ── Logout ──────────────────────────────────────────────
   const logoutBtn = document.getElementById('logout-btn');
@@ -2697,12 +2867,6 @@ function setupEventListeners() {
     clearLoggedInUser();
     location.reload();
   });
-
-  // ── Reset modal ─────────────────────────────────────────
-  const resetCancelBtn = document.getElementById('reset-cancel-btn');
-  const resetConfirmBtn = document.getElementById('reset-confirm-btn');
-  if (resetCancelBtn) resetCancelBtn.addEventListener('click', () => closeModal('modal-reset'));
-  if (resetConfirmBtn) resetConfirmBtn.addEventListener('click', handleResetConfirm);
 
   // ── Budget Planner ──────────────────────────────────────
   const budgetSaveBtn = document.getElementById('budget-save-btn');
@@ -2716,6 +2880,24 @@ function setupEventListeners() {
     anMonthSel.addEventListener('change', () => {
       analyticsMonthId = anMonthSel.value;
       renderAnalytics();
+    });
+  }
+
+  // ── Trends: month range selects ─────────────────────────
+  const trFromSel = document.getElementById('trends-from-select');
+  const trToSel = document.getElementById('trends-to-select');
+  if (trFromSel) {
+    trFromSel.addEventListener('change', () => {
+      trendFromMonth = trFromSel.value;
+      if (trendFromMonth > trendToMonth) { trendToMonth = trendFromMonth; }
+      renderTrends();
+    });
+  }
+  if (trToSel) {
+    trToSel.addEventListener('change', () => {
+      trendToMonth = trToSel.value;
+      if (trendToMonth < trendFromMonth) { trendFromMonth = trendToMonth; }
+      renderTrends();
     });
   }
 
@@ -2751,6 +2933,9 @@ async function init() {
   // Set up current month
   currentMonthId = getCurrentMonthId();
   analyticsMonthId = currentMonthId;
+  const _now = new Date();
+  trendFromMonth = `${_now.getFullYear()}-01`;
+  trendToMonth = currentMonthId;
 
   // Ensure current month exists with fixed expenses copied
   ensureMonth(currentMonthId);

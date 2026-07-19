@@ -86,6 +86,10 @@
       <span class="material-symbols-rounded nav-icon" aria-hidden="true">bar_chart</span>
       <span class="nav-label">Analytics</span>
     </a>
+    <a href="#" class="nav-item" data-view="trends" role="button">
+      <span class="material-symbols-rounded nav-icon" aria-hidden="true">insights</span>
+      <span class="nav-label">Trends</span>
+    </a>
     <a href="#" class="nav-item" data-view="budget" role="button">
       <span class="material-symbols-rounded nav-icon" aria-hidden="true">donut_large</span>
       <span class="nav-label">Budget</span>
@@ -340,6 +344,7 @@
           <button class="filter-tab" data-filter="week" role="tab" aria-selected="false">This Week</button>
           <button class="filter-tab" data-filter="today" role="tab" aria-selected="false">Today</button>
           <button class="filter-tab" data-filter="custom" role="tab" aria-selected="false">Custom</button>
+          <button class="filter-tab" data-filter="all" role="tab" aria-selected="false">All</button>
         </div>
       </div>
 
@@ -481,6 +486,95 @@
         <div id="cat-breakdown-table" aria-label="Category spending breakdown"></div>
         <div class="empty-state small" id="cat-table-empty" style="display:none">
           <span class="material-symbols-rounded empty-icon" aria-hidden="true">bar_chart</span>
+          <p>No data for this period.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================================================
+         VIEW: TRENDS
+         ================================================ -->
+    <section class="view" id="view-trends" aria-label="Category Trends">
+
+      <div class="view-header">
+        <h1 class="view-title">Trends</h1>
+      </div>
+
+      <!-- Month range picker -->
+      <div class="card trends-range-card">
+        <div class="trends-range-bar">
+          <div class="trends-range-group">
+            <label class="form-label" for="trends-from-select">From</label>
+            <select class="select-input" id="trends-from-select" aria-label="From month"></select>
+          </div>
+          <span class="material-symbols-rounded trends-range-arrow" aria-hidden="true">arrow_forward</span>
+          <div class="trends-range-group">
+            <label class="form-label" for="trends-to-select">To</label>
+            <select class="select-input" id="trends-to-select" aria-label="To month"></select>
+          </div>
+          <span class="badge badge-muted" id="tr-months-badge">0 months</span>
+        </div>
+      </div>
+
+      <!-- Summary metrics -->
+      <div class="analytics-summary" role="list" id="trends-summary">
+        <div class="an-metric" role="listitem">
+          <div class="an-label">Total Spent</div>
+          <div class="an-value danger" id="tr-spent">₹0</div>
+        </div>
+        <div class="an-metric" role="listitem">
+          <div class="an-label">Total Income</div>
+          <div class="an-value" id="tr-salary">₹0</div>
+        </div>
+        <div class="an-metric" role="listitem">
+          <div class="an-label">% of Income</div>
+          <div class="an-value warning" id="tr-pct">0%</div>
+        </div>
+        <div class="an-metric" role="listitem">
+          <div class="an-label">Transactions</div>
+          <div class="an-value" id="tr-count">0</div>
+        </div>
+        <div class="an-metric" role="listitem">
+          <div class="an-label">Avg / Month</div>
+          <div class="an-value" id="tr-avg">₹0</div>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="card">
+        <div class="card-header-row">
+          <h2 class="card-title">Spending by Category</h2>
+          <span class="card-subtitle-text" id="tr-range-label"></span>
+        </div>
+        <!-- column headers -->
+        <div class="trends-cat-header" aria-hidden="true">
+          <div class="trc-name">Category</div>
+          <div class="trc-bar-col"></div>
+          <div class="trc-amt">Amount</div>
+          <div class="trc-pct-spend">Of Spend</div>
+          <div class="trc-pct-income">Of Income</div>
+        </div>
+        <div id="trends-cat-table"></div>
+        <div class="empty-state small" id="trends-empty" style="display:none">
+          <span class="material-symbols-rounded empty-icon" aria-hidden="true">insights</span>
+          <p>No data for this period.</p>
+        </div>
+      </div>
+
+      <!-- Monthly breakdown table -->
+      <div class="card" id="trends-monthly-card">
+        <div class="card-header-row">
+          <h2 class="card-title">Month-by-Month Breakdown</h2>
+        </div>
+        <div class="trends-monthly-wrap">
+          <table class="trends-monthly-table" id="trends-monthly-table" aria-label="Category spending per month">
+            <thead id="trends-monthly-thead"></thead>
+            <tbody id="trends-monthly-tbody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state small" id="trends-monthly-empty" style="display:none">
+          <span class="material-symbols-rounded empty-icon" aria-hidden="true">table_chart</span>
           <p>No data for this period.</p>
         </div>
       </div>
@@ -736,16 +830,6 @@
               <input type="file" id="import-file" accept=".json" style="display:none" aria-hidden="true" />
             </div>
 
-            <div class="settings-action-row danger-row">
-              <div class="setting-info">
-                <div class="setting-label">Reset Application</div>
-                <div class="setting-desc">Delete all data permanently. Cannot be undone.</div>
-              </div>
-              <button class="btn btn-danger" id="reset-btn">
-                <span class="material-symbols-rounded" aria-hidden="true">delete_forever</span>
-                Reset
-              </button>
-            </div>
 
           </div>
         </div>
@@ -772,6 +856,20 @@
             <div class="shortcut-row" role="listitem">
               <span class="shortcut-desc">Close any modal</span>
               <div class="kbd-group"><kbd>Esc</kbd></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 50% Rule -->
+        <div class="card settings-card full-col">
+          <h2 class="settings-section-heading">
+            <span class="material-symbols-rounded" aria-hidden="true">balance</span>
+            50% Rule
+          </h2>
+          <div class="settings-action-row" style="align-items:flex-start">
+            <div class="setting-info">
+              <div class="setting-label">How it works</div>
+              <div class="setting-desc">Your non-loan expenses should stay under 50% of your monthly salary. Any expense whose <strong>name</strong> contains the word <em>loan</em> is automatically excluded from this calculation and tagged <strong>Excl. 50%</strong> in the expense list.</div>
             </div>
           </div>
         </div>
@@ -934,22 +1032,6 @@
 </div>
 
 <!-- Reset Confirm -->
-<div class="modal-overlay" id="modal-reset" role="alertdialog" aria-modal="true" aria-labelledby="reset-modal-title" style="display:none">
-  <div class="modal modal-sm" tabindex="-1">
-    <div class="modal-icon-header danger">
-      <span class="material-symbols-rounded modal-big-icon" aria-hidden="true">warning</span>
-    </div>
-    <h2 class="modal-title centered" id="reset-modal-title">Reset Everything?</h2>
-    <p class="modal-body-text">This will permanently delete <strong>all expenses, salary data, and settings</strong>. This cannot be undone. Export a backup first.</p>
-    <div class="modal-footer centered">
-      <button class="btn btn-ghost" id="reset-cancel-btn">Cancel</button>
-      <button class="btn btn-danger" id="reset-confirm-btn">
-        <span class="material-symbols-rounded" aria-hidden="true">delete_forever</span>
-        Yes, Reset All
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- ======================================================
      TOAST NOTIFICATIONS
