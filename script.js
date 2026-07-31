@@ -59,8 +59,8 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['mutual fund', 'sip', 'zerodha', 'groww', 'stocks', 'shares', 'gold bond', 'fixed deposit', 'ppf', 'nps', 'elss', 'investment', 'lic premium', 'insurance premium'], category: 'Investment' },
   { keywords: ['church', 'donation', 'tithe', 'offering', 'charity', 'contribution'], category: 'Donation' },
   { keywords: ['gift', 'birthday', 'anniversary', 'wedding', 'present for'], category: 'Gifts' },
-  { keywords: ['grocery', 'groceries', 'supermarket', 'dmart', 'bigbasket', 'blinkit', 'zepto', 'jiomart', 'more supermarket', 'reliance fresh', 'nature basket', 'vegetables', 'fruits', 'rice', 'dal', 'wheat', 'atta', 'oil', 'milk', 'eggs', 'provisions'], category: 'Groceries' },
-  { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink'], category: 'Stationary' },
+  { keywords: ['grocery', 'groceries', 'supermarket', 'dmart', 'bigbasket', 'blinkit', 'zepto', 'jiomart', 'more supermarket', 'reliance fresh', 'nature basket', 'vegetables', 'fruits', 'rice', 'dal', 'wheat', 'atta', 'oil', 'milk', 'eggs', 'provisions', 'traders'], category: 'Groceries' },
+  { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink', 'perfume'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'hair', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
   { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports', 'mma'], category: 'Gym' },
 ];
@@ -132,6 +132,7 @@ let customRangeFrom = null;
 let customRangeTo = null;
 let expenseSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first
 let expenseViewMode = localStorage.getItem('expenseViewMode') || 'list'; // 'list' | 'tile'
+let trendsTableMode = localStorage.getItem('trendsTableMode') || 'text'; // 'text' | 'icon'
 let trendFromMonth = '';
 let trendToMonth = '';
 let editingExpenseId = null;
@@ -1030,10 +1031,15 @@ function renderDashboard() {
     salaryLbl.textContent = 'Set Income';
   }
 
-  // Stats cards
-  document.getElementById('stat-salary').textContent = formatFullAmount(stats.salary);
-  document.getElementById('stat-salary-sub').textContent =
-    month && month.salarySet ? formatMonthName(currentMonthId) : 'Tap to set salary';
+  // Stats cards — Salary Last Month
+  const [_y, _m] = currentMonthId.split('-').map(Number);
+  const _lmDate = new Date(_y, _m - 2, 1);
+  const lastMonthId = `${_lmDate.getFullYear()}-${String(_lmDate.getMonth() + 1).padStart(2, '0')}`;
+  const lastMonthData = appData.months[lastMonthId];
+  const lastMonthSalary = lastMonthData && lastMonthData.salarySet ? lastMonthData.salary : 0;
+  document.getElementById('stat-salary-label').textContent = `Salary — ${formatMonthName(lastMonthId)}`;
+  document.getElementById('stat-salary').textContent = lastMonthSalary > 0 ? formatFullAmount(lastMonthSalary) : '—';
+  document.getElementById('stat-salary-sub').textContent = lastMonthSalary > 0 ? 'Last month salary' : 'No salary set last month';
 
   document.getElementById('stat-spent').textContent = formatFullAmount(stats.totalSpent);
   document.getElementById('stat-count').textContent = `${stats.count} transaction${stats.count !== 1 ? 's' : ''}`;
@@ -1628,6 +1634,10 @@ function renderTrendsMonthlyTable(rangeMonths, monthlyData, catTotals) {
     <th class="tmt-total-col">Total</th>
   </tr>`;
 
+  // Sync toggle button icon
+  const toggleIcon = document.getElementById('trends-table-toggle-icon');
+  if (toggleIcon) toggleIcon.textContent = trendsTableMode === 'icon' ? 'text_fields' : 'hide_source';
+
   tbody.innerHTML = cats.map(cat => {
     const meta = getCatMeta(cat);
     const total = catTotals[cat] || 0;
@@ -1636,11 +1646,11 @@ function renderTrendsMonthlyTable(rangeMonths, monthlyData, catTotals) {
       const intensity = (maxVal > 0 && v > 0) ? Math.min(8, Math.ceil((v / maxVal) * 8)) : 0;
       return `<td class="tmt-cell" data-intensity="${intensity}" title="${v > 0 ? formatFullAmount(v) : ''}">${v > 0 ? formatCurrency(v) : '—'}</td>`;
     }).join('');
+    const catLabel = trendsTableMode === 'icon'
+      ? `<span class="material-symbols-rounded tmt-cat-icon" style="color:${meta.color}" title="${escapeHtml(cat)}" aria-label="${escapeHtml(cat)}">${meta.icon}</span>`
+      : `<span class="material-symbols-rounded tmt-cat-icon" style="color:${meta.color}" aria-hidden="true">${meta.icon}</span>${escapeHtml(cat)}`;
     return `<tr>
-      <td class="tmt-cat-cell">
-        <span class="material-symbols-rounded tmt-cat-icon" style="color:${meta.color}" aria-hidden="true">${meta.icon}</span>
-        ${escapeHtml(cat)}
-      </td>
+      <td class="tmt-cat-cell ${trendsTableMode === 'icon' ? 'icon-only' : ''}">${catLabel}</td>
       ${cells}
       <td class="tmt-total-cell">${formatFullAmount(total)}</td>
     </tr>`;
@@ -2767,6 +2777,13 @@ function setupEventListeners() {
 
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => setModeToggle(btn.dataset.mode));
+  });
+
+  const trendsToggle = document.getElementById('trends-table-toggle');
+  if (trendsToggle) trendsToggle.addEventListener('click', () => {
+    trendsTableMode = trendsTableMode === 'text' ? 'icon' : 'text';
+    localStorage.setItem('trendsTableMode', trendsTableMode);
+    renderTrends();
   });
 
   const expViewToggle = document.getElementById('expense-view-toggle');

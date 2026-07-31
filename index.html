@@ -173,9 +173,9 @@
             <span class="material-symbols-rounded">payments</span>
           </div>
           <div class="stat-body">
-            <div class="stat-label">Monthly Income</div>
+            <div class="stat-label" id="stat-salary-label">Salary Available</div>
             <div class="stat-value" id="stat-salary">₹0</div>
-            <div class="stat-sub" id="stat-salary-sub">Tap to set salary</div>
+            <div class="stat-sub" id="stat-salary-sub">—</div>
           </div>
         </div>
 
@@ -191,6 +191,17 @@
         </div>
 
         <div class="stat-card" role="listitem">
+          <div class="stat-icon warning" aria-hidden="true">
+            <span class="material-symbols-rounded">price_check</span>
+          </div>
+          <div class="stat-body">
+            <div class="stat-label">50% Rule Left</div>
+            <div class="stat-value" id="stat-nonloan-remaining">₹0</div>
+            <div class="stat-sub" id="stat-nonloan-sub">Set salary to calculate</div>
+          </div>
+        </div>
+
+        <div class="stat-card" role="listitem">
           <div class="stat-icon success" aria-hidden="true">
             <span class="material-symbols-rounded">account_balance_wallet</span>
           </div>
@@ -198,17 +209,6 @@
             <div class="stat-label">Remaining</div>
             <div class="stat-value success" id="stat-remaining">₹0</div>
             <div class="stat-sub" id="stat-daily">Set salary to calculate</div>
-          </div>
-        </div>
-
-        <div class="stat-card" role="listitem">
-          <div class="stat-icon warning" aria-hidden="true">
-            <span class="material-symbols-rounded">savings</span>
-          </div>
-          <div class="stat-body">
-            <div class="stat-label">Savings</div>
-            <div class="stat-value" id="stat-savings">₹0</div>
-            <div class="stat-sub" id="stat-savings-pct">0% of salary</div>
           </div>
         </div>
 
@@ -230,12 +230,12 @@
 
         <div class="stat-card" role="listitem">
           <div class="stat-icon warning" aria-hidden="true">
-            <span class="material-symbols-rounded">price_check</span>
+            <span class="material-symbols-rounded">savings</span>
           </div>
           <div class="stat-body">
-            <div class="stat-label">50% Rule Left</div>
-            <div class="stat-value" id="stat-nonloan-remaining">₹0</div>
-            <div class="stat-sub" id="stat-nonloan-sub">Set salary to calculate</div>
+            <div class="stat-label">Savings</div>
+            <div class="stat-value" id="stat-savings">₹0</div>
+            <div class="stat-sub" id="stat-savings-pct">0% of salary</div>
           </div>
         </div>
 
@@ -499,6 +499,9 @@
 
       <div class="view-header">
         <h1 class="view-title">Trends</h1>
+        <button class="icon-btn" id="trends-table-toggle" aria-label="Toggle category label display" title="Toggle icon/text">
+          <span class="material-symbols-rounded" id="trends-table-toggle-icon">text_fields</span>
+        </button>
       </div>
 
       <!-- Month range picker -->
@@ -980,12 +983,35 @@
         <label class="form-label" for="exp-note">Note <span class="form-opt">(optional)</span></label>
         <textarea id="exp-note" class="text-input textarea-input" placeholder="Any notes…" rows="2" maxlength="250"></textarea>
       </div>
+      <div id="exp-dup-inline" class="exp-dup-inline" style="display:none" role="alert" aria-live="polite">
+        <div class="exp-dup-inline-header">
+          <span class="material-symbols-rounded exp-dup-inline-icon" aria-hidden="true">warning</span>
+          <span class="exp-dup-inline-title">Possible duplicate</span>
+        </div>
+        <div id="exp-dup-inline-list" class="exp-dup-inline-list"></div>
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" id="expense-cancel-btn">Cancel</button>
         <button type="button" class="btn btn-secondary" id="expense-add-another-btn" style="display:none">+ Add Another</button>
         <button type="submit" class="btn btn-primary" id="expense-save-btn">Submit Expense</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Duplicate Warning -->
+<div class="modal-overlay" id="modal-dup" role="alertdialog" aria-modal="true" aria-labelledby="dup-modal-title" style="display:none">
+  <div class="modal modal-sm" tabindex="-1">
+    <div class="modal-icon-header warning">
+      <span class="material-symbols-rounded modal-big-icon" aria-hidden="true">warning</span>
+    </div>
+    <h2 class="modal-title centered" id="dup-modal-title">Possible Duplicate</h2>
+    <p class="modal-body-text">A similar expense already exists this month:</p>
+    <div id="dup-list" class="dup-list"></div>
+    <div class="modal-footer centered">
+      <button class="btn btn-ghost" id="dup-cancel-btn">Cancel</button>
+      <button class="btn btn-primary" id="dup-proceed-btn">Proceed Anyway</button>
+    </div>
   </div>
 </div>
 
@@ -1038,10 +1064,19 @@
      ====================================================== -->
 <div class="toast-container" id="toast-container" role="region" aria-live="polite" aria-label="Notifications"></div>
 
+<!-- Chart hover tooltip -->
+<div id="chart-tooltip" class="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+
 <!-- Screen reader announcer -->
 <div class="sr-only" aria-live="assertive" id="sr-announcer"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="script.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
