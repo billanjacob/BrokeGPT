@@ -45,6 +45,28 @@ appData.months["2025-06"]: { salary, salarySet, expenses: [...], fixedCopied }
 - Excluded: EMI/Loan, Home Loan, Car Loan, etc. (anything with "loan" in category name)
 - Status thresholds: ≥100% → danger, ≥80% → warning, else → success
 
+## Expenses View
+- **Tile / List toggle**: `expenseViewMode` (`'list'` | `'tile'`) persisted in **localStorage** (exception to the no-localStorage rule — UI preference only). Toggle button swaps the icon between `grid_view` and `view_list`.
+- In tile mode the container gets class `expenses-tile-grid`; each expense renders as `.expense-tile` with a coloured header, icon, amount, name, date, and mode badge.
+- In list mode expenses render as the standard `.expense-item` rows.
+
+## Payment Mode (expense field)
+- Each expense has a `mode` field: `'Cash'` (default) or `'GPay'`.
+- Rendered as `.expense-mode-badge` with sub-classes `cash` or `gpay` for distinct styling.
+- Both list and tile views display the badge. `'GPay'` is auto-detected via keyword matching in the add-expense flow.
+
+## Categories
+- Full list defined at top of `script.js` — includes `Groceries` (icon: `local_grocery_store`, color: `#16A34A`).
+- Keyword matcher maps grocery-related terms (`grocery`, `dmart`, `blinkit`, `zepto`, `vegetables`, `milk`, etc.) → `Groceries` automatically.
+- Default categories cannot be removed in Settings; custom categories can be added.
+
+## Last Update Rule
+**After every code change, update the Last Updated line in `index.html`.**
+- Element: `<div class="about-version" id="about-last-update">` inside the About card in the Settings view (near the bottom of the file)
+- Format: `Last Updated: YYYY-MM-DD · U<N>` where `<N>` is a sequential number incremented from the previous value
+- Today's date is available in the system context (`currentDate` memory). Always use the actual current date.
+- This must be done as part of every PR/commit that changes any project file.
+
 ## Architecture Notes
 - `navigateTo(view)` handles view switching and calls the right render function
 - `refreshCurrentView()` re-renders active view after any data change
