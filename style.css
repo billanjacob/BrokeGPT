@@ -3523,7 +3523,15 @@ kbd {
 
   .fab { bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); right: calc(var(--space-5) + env(safe-area-inset-right)); }
 
-  .analytics-summary { grid-template-columns: 1fr 1fr; }
+  /* 3 visible metrics fit better in 3 cols than 2 (avoids orphaned 3rd card) */
+  .analytics-summary { grid-template-columns: repeat(3, 1fr); }
+
+  /* Trends: drop income column now that content is full-width */
+  .trends-cat-header,
+  .trends-cat-row {
+    grid-template-columns: 150px 1fr 100px 75px;
+  }
+  .trc-pct-income { display: none; }
 
   .history-grid { grid-template-columns: 1fr; }
 
@@ -3569,10 +3577,23 @@ kbd {
   .analytics-summary { grid-template-columns: 1fr 1fr; }
   .an-metric:nth-child(5) { display: none; }
 
-  .trends-cat-header,
+  /* Trends range picker: stack From/To vertically on phones */
+  .trends-range-bar { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+  .trends-range-arrow { display: none; }
+  .trends-range-group .select-input { flex: 1; }
+
+  /* Trends category table: card layout — [name | amount] / [bar | % spend] */
+  .trends-cat-header { display: none; }
   .trends-cat-row {
-    grid-template-columns: 140px 1fr 90px 70px;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px var(--space-3);
+    padding: var(--space-3) var(--space-4);
   }
+  .trc-name      { grid-column: 1; grid-row: 1; }
+  .trc-amt       { grid-column: 2; grid-row: 1; align-self: start; }
+  .trc-bar-col   { grid-column: 1; grid-row: 2; }
+  .trc-pct-spend { grid-column: 2; grid-row: 2; font-size: var(--text-xs); align-self: center; }
   .trc-pct-income { display: none; }
 }
 
