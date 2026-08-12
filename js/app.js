@@ -83,6 +83,7 @@ function navigateTo(viewName) {
   if (viewName === 'analytics') renderAnalytics();
   if (viewName === 'trends') renderTrends();
   if (viewName === 'budget') renderBudgetPlanner();
+  if (viewName === 'bills') renderBills();
   if (viewName === 'history') renderHistory();
   if (viewName === 'settings') renderSettings();
 }
@@ -97,6 +98,7 @@ function refreshCurrentView() {
   if (currentView === 'analytics') renderAnalytics();
   if (currentView === 'trends') renderTrends();
   if (currentView === 'budget') renderBudgetPlanner();
+  if (currentView === 'bills') renderBills();
   if (currentView === 'history') renderHistory();
   if (currentView === 'settings') renderSettings();
 }
@@ -397,6 +399,65 @@ function handleSalarySave() {
 }
 
 /* ============================================================
+   BILLS CRUD
+   ============================================================ */
+
+function openAddBillModal() {
+  editingBillId = null;
+  document.getElementById('bill-modal-title').textContent = 'Add Bill';
+  document.getElementById('bill-modal-save-label').textContent = 'Add Bill';
+  document.getElementById('bill-prefix').textContent = appData.settings.currency || '₹';
+  document.getElementById('bill-name-input').value = '';
+  document.getElementById('bill-amount-input').value = '';
+  openModal('modal-bill');
+}
+
+function openEditBillModal(id) {
+  const bill = (appData.bills || []).find(b => b.id === id);
+  if (!bill) return;
+  editingBillId = id;
+  document.getElementById('bill-modal-title').textContent = 'Edit Bill';
+  document.getElementById('bill-modal-save-label').textContent = 'Save';
+  document.getElementById('bill-prefix').textContent = appData.settings.currency || '₹';
+  document.getElementById('bill-name-input').value = bill.name;
+  document.getElementById('bill-amount-input').value = bill.amount;
+  openModal('modal-bill');
+}
+
+function handleBillSave() {
+  const name = document.getElementById('bill-name-input').value.trim();
+  const amount = parseFloat(document.getElementById('bill-amount-input').value);
+  if (!name) { showToast('Enter a bill name.', 'warning'); return; }
+  if (isNaN(amount) || amount < 0) { showToast('Enter a valid amount.', 'warning'); return; }
+
+  if (editingBillId) {
+    const idx = (appData.bills || []).findIndex(b => b.id === editingBillId);
+    if (idx !== -1) {
+      appData.bills[idx] = { ...appData.bills[idx], name, amount };
+      syncUpdateBill(appData.bills[idx]);
+      showToast('Bill updated!', 'success');
+    }
+  } else {
+    const newBill = { id: generateId('bill'), name, amount };
+    appData.bills.push(newBill);
+    syncInsertBill(newBill);
+    showToast('Bill added!', 'success');
+  }
+
+  closeModal('modal-bill');
+  renderBills();
+  if (currentView === 'dashboard') renderDashboard();
+}
+
+function deleteBill(id) {
+  appData.bills = (appData.bills || []).filter(b => b.id !== id);
+  syncDeleteBill(id);
+  showToast('Bill deleted.', 'success');
+  renderBills();
+  if (currentView === 'dashboard') renderDashboard();
+}
+
+/* ============================================================
    BACKUP — IMPORT
    ============================================================ */
 
@@ -638,21 +699,56 @@ function setupEventListeners() {
     });
   }
 
-  // ── Filter tabs ─────────────────────────────────────────
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  // ── Filter tabs (expenses) ───────────────────────────────
+  document.querySelectorAll('#view-expenses .filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tab').forEach(t => {
+      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
       });
       tab.classList.add('active');
       tab.setAttribute('aria-selected', 'true');
       activeTimeFilter = tab.dataset.filter;
+      const periodSel = document.getElementById('period-filter-select');
+      if (periodSel) periodSel.value = activeTimeFilter;
       const rangeBar = document.getElementById('custom-range-bar');
       if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
       renderExpenses();
     });
   });
+
+  // ── Desktop period select dropdown (expenses) ────────────
+  const periodFilterSelect = document.getElementById('period-filter-select');
+  if (periodFilterSelect) {
+    periodFilterSelect.addEventListener('change', () => {
+      activeTimeFilter = periodFilterSelect.value;
+      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
+        const isActive = t.dataset.filter === activeTimeFilter;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      const rangeBar = document.getElementById('custom-range-bar');
+      if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
+      renderExpenses();
+    });
+  }
+
+  // ── Budget period filter tabs ───────────────────────────
+  document.querySelectorAll('#view-budget .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      budgetTimeFilter = tab.dataset.bfilter;
+      renderBudgetPlanner();
+    });
+  });
+
+  const budgetApplyRange = document.getElementById('budget-apply-range');
+  if (budgetApplyRange) {
+    budgetApplyRange.addEventListener('click', () => {
+      budgetRangeFrom = document.getElementById('budget-from-month').value || '';
+      budgetRangeTo = document.getElementById('budget-to-month').value || '';
+      renderBudgetPlanner();
+    });
+  }
 
   // ── Custom date range ───────────────────────────────────
   const applyRangeBtn = document.getElementById('apply-range-btn');
@@ -754,6 +850,20 @@ function setupEventListeners() {
   if (salarySaveBtn) salarySaveBtn.addEventListener('click', handleSalarySave);
   if (salaryInput) salaryInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSalarySave(); });
 
+  // ── Bills Buffer tile — navigate to bills view ──────────
+  const editBillsBtn = document.getElementById('edit-bills-month-btn');
+  if (editBillsBtn) editBillsBtn.addEventListener('click', () => navigateTo('bills'));
+
+  // ── Bill add/edit modal ─────────────────────────────────
+  const billModalCancel = document.getElementById('bill-modal-cancel');
+  const billModalSave = document.getElementById('bill-modal-save');
+  const billNameInput = document.getElementById('bill-name-input');
+  const billAmountInput = document.getElementById('bill-amount-input');
+  if (billModalCancel) billModalCancel.addEventListener('click', () => closeModal('modal-bill'));
+  if (billModalSave) billModalSave.addEventListener('click', handleBillSave);
+  if (billNameInput) billNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('bill-amount-input')?.focus(); });
+  if (billAmountInput) billAmountInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleBillSave(); });
+
   // ── Settings: currency ──────────────────────────────────
   const curSel = document.getElementById('settings-currency');
   if (curSel) {
@@ -777,6 +887,10 @@ function setupEventListeners() {
       showToast('Default salary saved!', 'success', 2000);
     });
   }
+
+  // ── Bills view ──────────────────────────────────────────
+  const addBillBtn = document.getElementById('add-bill-btn');
+  if (addBillBtn) addBillBtn.addEventListener('click', openAddBillModal);
 
   // ── Settings: categories ────────────────────────────────
   const addCatBtn = document.getElementById('add-cat-btn');

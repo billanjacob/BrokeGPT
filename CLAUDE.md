@@ -4,7 +4,7 @@
 Pure HTML + CSS + Vanilla JS (no frameworks). Backend is **Supabase** — data is read/written directly from the browser via the Supabase JS SDK (loaded from CDN). No localStorage — all persistence goes through Supabase.
 
 ## Supabase
-- Client initialised at top of `script.js` with `SUPABASE_URL` + `SUPABASE_KEY` (anon key)
+- Client initialised in `js/app.js` with `SUPABASE_URL` + `SUPABASE_KEY` (anon key)
 - Tables: `bgpt_settings`, `bgpt_months`, `bgpt_expenses`, `tbl_users`
 - `loadData()` fetches all three app tables on init; a loading screen stays visible until the fetch resolves (6s timeout before falling back to default data)
 - Writes: upsert for settings/months, insert/update/delete for expenses — all fire-and-forget (no await at call sites)
@@ -12,7 +12,14 @@ Pure HTML + CSS + Vanilla JS (no frameworks). Backend is **Supabase** — data i
 ## Files
 - `index.html` — all views as `<section class="view">` elements; one active at a time
 - `style.css` — CSS custom properties for theming; dark mode via `[data-theme="dark"]`
-- `script.js` — all logic; `init()` boots on DOMContentLoaded
+- `js/constants.js` — `DEFAULT_CATEGORIES`, `CATEGORY_META`, `NAME_CATEGORY_RULES`, color/icon palettes
+- `js/state.js` — `appData` and other mutable state
+- `js/utils.js` — pure helper functions
+- `js/data.js` — Supabase `loadData()`, `syncSettings()`, `syncMonth()`
+- `js/calc.js` — budget/analytics calculations
+- `js/render.js` — all DOM rendering functions
+- `js/app.js` — `init()`, event wiring, `navigateTo()`, boots on DOMContentLoaded
+- **NOTE: `script.js` at root is NOT loaded by `index.html` — never edit it**
 
 ## Views / Nav Order
 Dashboard → Expenses → Analytics → Budget → History → Settings
@@ -56,7 +63,7 @@ appData.months["2025-06"]: { salary, salarySet, expenses: [...], fixedCopied }
 - Both list and tile views display the badge. `'GPay'` is auto-detected via keyword matching in the add-expense flow.
 
 ## Categories
-- Full list defined at top of `script.js` — includes `Groceries` (icon: `local_grocery_store`, color: `#16A34A`).
+- Full list defined in `js/constants.js` — includes `Groceries` (icon: `local_grocery_store`, color: `#16A34A`) and `Gadgets` (icon: `devices`, color: `#6366F1`).
 - Keyword matcher maps grocery-related terms (`grocery`, `dmart`, `blinkit`, `zepto`, `vegetables`, `milk`, etc.) → `Groceries` automatically.
 - Default categories cannot be removed in Settings; custom categories can be added.
 

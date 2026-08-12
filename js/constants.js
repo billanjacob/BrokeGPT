@@ -8,7 +8,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
-  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries',
+  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets',
 ];
 
 const CATEGORY_META = {
@@ -30,6 +30,7 @@ const CATEGORY_META = {
   Saloon: { icon: 'content_cut', color: '#D946EF' },
   Gym: { icon: 'fitness_center', color: '#84CC16' },
   Groceries: { icon: 'local_grocery_store', color: '#16A34A' },
+  Gadgets: { icon: 'devices', color: '#6366F1' },
 };
 
 const NAME_CATEGORY_RULES = [
@@ -37,7 +38,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie', 'ice', 'incha'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
-  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack'], category: 'Internet' },
+  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack', 'cable'], category: 'Internet' },
   { keywords: ['electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'maintenance'], category: 'Bills' },
   { keywords: ['netflix', 'hotstar', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
   { keywords: ['spotify', 'Spotify',], category: 'Spotify' },
@@ -52,6 +53,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink', 'perfume'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'hair', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
   { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports', 'mma'], category: 'Gym' },
+  { keywords: ['gadget', 'laptop', 'mobile', 'smartphone', 'phone', 'tablet', 'smartwatch', 'earphone', 'earbuds', 'headphone', 'speaker', 'keyboard', 'mouse', 'monitor', 'webcam', 'charger', 'power bank', 'usb', 'hdmi', 'ssd', 'hard disk', 'ram', 'processor', 'graphics card', 'router', 'camera', 'drone', 'console', 'apple', 'samsung', 'xiaomi', 'oneplus', 'realme', 'oppo', 'vivo', 'lenovo', 'hp laptop', 'dell', 'asus'], category: 'Gadgets' },
 ];
 
 const ICON_PICKER_OPTIONS = [
@@ -104,4 +106,5 @@ const DEFAULT_DATA = {
   },
   categories: [...DEFAULT_CATEGORIES],
   months: {},
+  bills: [],
 };

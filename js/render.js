@@ -3,22 +3,52 @@
    ============================================================ */
 
 function renderBudgetPlanner() {
-  const month = appData.months[currentMonthId];
-  const salary = month ? (month.salary || 0) : 0;
-  const stats = calcMonthStats(currentMonthId);
-  const rows = calcBudgetRows(currentMonthId);
+  // Sync range bar and active tab to current filter state
+  const budRangeBar = document.getElementById('budget-range-bar');
+  if (budRangeBar) budRangeBar.style.display = budgetTimeFilter === 'range' ? 'flex' : 'none';
+  document.querySelectorAll('#view-budget .filter-tab').forEach(t => {
+    const isActive = t.dataset.bfilter === budgetTimeFilter;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  // Aggregate salary + expenses across all months in the selected period
+  const monthIds = getBudgetMonthIds();
+  let salary = 0;
+  const catTotals = {};
+  let totalSpent = 0;
+  monthIds.forEach(id => {
+    const m = appData.months[id];
+    if (m) {
+      salary += (m.salary || 0);
+      (m.expenses || []).forEach(e => {
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+        totalSpent += e.amount;
+      });
+    }
+  });
+  const rows = getBudgetAllocations().map(alloc => calcBudgetRow(salary, alloc, catTotals));
 
   // Subtitle
   const subtitle = document.getElementById('budget-view-subtitle');
   if (subtitle) {
-    subtitle.innerHTML = salary > 0
-      ? `Allocating <strong>${formatFullAmount(salary)}</strong> for ${formatMonthName(currentMonthId)}`
-      : 'Set your monthly salary to see budget calculations';
+    if (monthIds.length === 0) {
+      subtitle.textContent = 'No data for the selected period';
+    } else if (monthIds.length === 1) {
+      const mId = monthIds[0];
+      subtitle.innerHTML = salary > 0
+        ? `Allocating <strong>${formatFullAmount(salary)}</strong> for ${formatMonthName(mId)}`
+        : 'Set your monthly salary to see budget calculations';
+    } else {
+      const rangeText = `${formatMonthName(monthIds[0])} – ${formatMonthName(monthIds[monthIds.length - 1])}`;
+      subtitle.innerHTML = salary > 0
+        ? `${rangeText} · <strong>${formatFullAmount(salary)}</strong> combined`
+        : `${rangeText} · No salary data`;
+    }
   }
 
   // Health card values
   const totalBudgeted = rows.reduce((s, r) => s + r.budget, 0);
-  const totalSpent = stats.totalSpent;
   const totalRemaining = salary - totalSpent;
   const health = getBudgetHealth(salary, totalSpent);
 
@@ -259,6 +289,30 @@ function renderDashboard() {
     } else {
       nlRemEl.textContent = '₹0';
       document.getElementById('stat-nonloan-sub').textContent = 'Set salary to calculate';
+    }
+  }
+
+  // Bills Buffer card (safe-to-spend after subtracting default bills total)
+  const bbSafeEl = document.getElementById('stat-bills-safe');
+  const bbSubEl = document.getElementById('stat-bills-safe-sub');
+  if (bbSafeEl) {
+    const bills = appData.bills || [];
+    const totalBills = bills.reduce((s, b) => s + b.amount, 0);
+    const safeToSpend = stats.nonLoanRemaining - totalBills;
+    bbSafeEl.className = 'stat-value';
+    if (stats.salary > 0) {
+      bbSafeEl.textContent = (safeToSpend < 0 ? '-' : '') + formatFullAmount(Math.abs(safeToSpend));
+      if (safeToSpend < 0) bbSafeEl.classList.add('danger');
+      else if (stats.nonLoanPct >= 80) bbSafeEl.classList.add('warning');
+      else bbSafeEl.classList.add('success');
+      if (bbSubEl) {
+        bbSubEl.textContent = bills.length > 0
+          ? `${formatCurrency(totalBills)} in ${bills.length} bill${bills.length !== 1 ? 's' : ''}`
+          : 'No bills added · Go to Bills';
+      }
+    } else {
+      bbSafeEl.textContent = '₹0';
+      if (bbSubEl) bbSubEl.textContent = 'Set salary to calculate';
     }
   }
 
@@ -1326,6 +1380,57 @@ function renderHistory() {
     card.addEventListener('click', activate);
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+    });
+  });
+}
+
+/* ============================================================
+   RENDER — BILLS VIEW
+   ============================================================ */
+
+function renderBills() {
+  const bills = appData.bills || [];
+  const total = bills.reduce((s, b) => s + b.amount, 0);
+  const cur = appData.settings.currency;
+
+  const totalEl = document.getElementById('bills-total');
+  const subEl = document.getElementById('bills-summary-sub');
+  if (totalEl) totalEl.textContent = formatFullAmount(total);
+  if (subEl) subEl.textContent = `${bills.length} bill${bills.length !== 1 ? 's' : ''} · deducted from 50% budget`;
+
+  const list = document.getElementById('bills-list');
+  const emptyEl = document.getElementById('bills-empty');
+  if (!list) return;
+
+  if (bills.length === 0) {
+    list.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  list.innerHTML = bills.map(b => `
+    <div class="bill-item" data-id="${escapeHtml(b.id)}">
+      <div class="bill-item-icon" aria-hidden="true">
+        <span class="material-symbols-rounded">receipt_long</span>
+      </div>
+      <div class="bill-item-name">${escapeHtml(b.name)}</div>
+      <div class="bill-item-amount">${formatCurrency(b.amount)}</div>
+      <div class="bill-item-actions">
+        <button class="icon-btn" data-action="edit" data-id="${escapeHtml(b.id)}" aria-label="Edit ${escapeHtml(b.name)}">
+          <span class="material-symbols-rounded">edit</span>
+        </button>
+        <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(b.id)}" aria-label="Delete ${escapeHtml(b.name)}">
+          <span class="material-symbols-rounded">delete</span>
+        </button>
+      </div>
+    </div>`).join('');
+
+  list.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (btn.dataset.action === 'edit') openEditBillModal(btn.dataset.id);
+      if (btn.dataset.action === 'delete') deleteBill(btn.dataset.id);
     });
   });
 }

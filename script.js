@@ -19,7 +19,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
-  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries',
+  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets',
 ];
 
 const CATEGORY_META = {
@@ -41,6 +41,7 @@ const CATEGORY_META = {
   Saloon: { icon: 'content_cut', color: '#D946EF' },
   Gym: { icon: 'fitness_center', color: '#84CC16' },
   Groceries: { icon: 'local_grocery_store', color: '#16A34A' },
+  Gadgets: { icon: 'devices', color: '#6366F1' },
 };
 
 const NAME_CATEGORY_RULES = [
@@ -48,7 +49,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie', 'ice', 'incha'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
-  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack'], category: 'Internet' },
+  { keywords: ['bsnl', 'jio', 'airtel', 'vodafone', 'vi plan', 'wifi', 'internet', 'broadband', 'recharge', 'mobile bill', 'landline', 'postpaid', 'prepaid', 'data pack', 'cable'], category: 'Internet' },
   { keywords: ['electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'maintenance'], category: 'Bills' },
   { keywords: ['netflix', 'hotstar', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
   { keywords: ['spotify', 'Spotify',], category: 'Spotify' },
@@ -63,6 +64,7 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink', 'perfume'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'hair', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },
   { keywords: ['gym', 'fitness', 'workout', 'membership', 'protein', 'whey', 'supplement', 'crossfit', 'yoga', 'zumba', 'sports', 'mma'], category: 'Gym' },
+  { keywords: ['gadget', 'laptop', 'mobile', 'smartphone', 'phone', 'tablet', 'smartwatch', 'earphone', 'earbuds', 'headphone', 'speaker', 'keyboard', 'mouse', 'monitor', 'webcam', 'charger', 'power bank', 'usb', 'hdmi', 'ssd', 'hard disk', 'ram', 'processor', 'graphics card', 'router', 'camera', 'drone', 'console', 'apple', 'samsung', 'xiaomi', 'oneplus', 'realme', 'oppo', 'vivo', 'lenovo', 'hp laptop', 'dell', 'asus'], category: 'Gadgets' },
 ];
 
 const ICON_PICKER_OPTIONS = [
@@ -141,6 +143,9 @@ let newCatColor = '#64748B';
 let editingCatName = null;
 let deleteTarget = null;
 let deleteContext = null;
+let budgetTimeFilter = 'month'; // 'month' | 'last-month' | 'range' | 'all'
+let budgetRangeFrom = '';
+let budgetRangeTo = '';
 
 /* ============================================================
    UTILITY FUNCTIONS
@@ -491,6 +496,24 @@ function getAllMonths() {
     if (b.year !== a.year) return b.year - a.year;
     return b.month - a.month;
   });
+}
+
+/** Returns the list of monthIds to aggregate for the Budget Planner based on budgetTimeFilter. */
+function getBudgetMonthIds() {
+  const allIds = Object.keys(appData.months).sort();
+  if (budgetTimeFilter === 'last-month') {
+    const [y, m] = currentMonthId.split('-').map(Number);
+    const d = new Date(y, m - 2, 1);
+    const lastId = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return appData.months[lastId] ? [lastId] : [];
+  }
+  if (budgetTimeFilter === 'range') {
+    const from = budgetRangeFrom || currentMonthId;
+    const to = budgetRangeTo || currentMonthId;
+    return allIds.filter(id => id >= from && id <= to);
+  }
+  if (budgetTimeFilter === 'all') return allIds.length ? allIds : [currentMonthId];
+  return [currentMonthId]; // 'month'
 }
 
 /* ============================================================
@@ -845,22 +868,52 @@ function updateCurrencyPrefixes() {
    ============================================================ */
 
 function renderBudgetPlanner() {
-  const month = appData.months[currentMonthId];
-  const salary = month ? (month.salary || 0) : 0;
-  const stats = calcMonthStats(currentMonthId);
-  const rows = calcBudgetRows(currentMonthId);
+  // Sync range bar and active tab to match current budgetTimeFilter state
+  const budRangeBar = document.getElementById('budget-range-bar');
+  if (budRangeBar) budRangeBar.style.display = budgetTimeFilter === 'range' ? 'flex' : 'none';
+  document.querySelectorAll('#view-budget .filter-tab').forEach(t => {
+    const isActive = t.dataset.bfilter === budgetTimeFilter;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  const monthIds = getBudgetMonthIds();
+
+  let salary = 0;
+  const catTotals = {};
+  let totalSpent = 0;
+  monthIds.forEach(id => {
+    const m = appData.months[id];
+    if (m) {
+      salary += (m.salary || 0);
+      (m.expenses || []).forEach(e => {
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+        totalSpent += e.amount;
+      });
+    }
+  });
+  const rows = getBudgetAllocations().map(alloc => calcBudgetRow(salary, alloc, catTotals));
 
   // Subtitle
   const subtitle = document.getElementById('budget-view-subtitle');
   if (subtitle) {
-    subtitle.innerHTML = salary > 0
-      ? `Allocating <strong>${formatFullAmount(salary)}</strong> for ${formatMonthName(currentMonthId)}`
-      : 'Set your monthly salary to see budget calculations';
+    if (monthIds.length === 0) {
+      subtitle.textContent = 'No data for the selected period';
+    } else if (monthIds.length === 1) {
+      const mId = monthIds[0];
+      subtitle.innerHTML = salary > 0
+        ? `Allocating <strong>${formatFullAmount(salary)}</strong> for ${formatMonthName(mId)}`
+        : 'Set your monthly salary to see budget calculations';
+    } else {
+      const rangeText = `${formatMonthName(monthIds[0])} – ${formatMonthName(monthIds[monthIds.length - 1])}`;
+      subtitle.innerHTML = salary > 0
+        ? `${rangeText} · <strong>${formatFullAmount(salary)}</strong> combined`
+        : `${rangeText} · No salary data`;
+    }
   }
 
   // Health card values
   const totalBudgeted = rows.reduce((s, r) => s + r.budget, 0);
-  const totalSpent = stats.totalSpent;
   const totalRemaining = salary - totalSpent;
   const health = getBudgetHealth(salary, totalSpent);
 
@@ -2725,21 +2778,39 @@ function setupEventListeners() {
     });
   }
 
-  // ── Filter tabs ─────────────────────────────────────────
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  // ── Filter tabs (expenses) ───────────────────────────────
+  document.querySelectorAll('#view-expenses .filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tab').forEach(t => {
+      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
       });
       tab.classList.add('active');
       tab.setAttribute('aria-selected', 'true');
       activeTimeFilter = tab.dataset.filter;
+      const periodSel = document.getElementById('period-filter-select');
+      if (periodSel) periodSel.value = activeTimeFilter;
       const rangeBar = document.getElementById('custom-range-bar');
       if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
       renderExpenses();
     });
   });
+
+  // ── Desktop period select dropdown ──────────────────────
+  const periodFilterSelect = document.getElementById('period-filter-select');
+  if (periodFilterSelect) {
+    periodFilterSelect.addEventListener('change', () => {
+      activeTimeFilter = periodFilterSelect.value;
+      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
+        const isActive = t.dataset.filter === activeTimeFilter;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      const rangeBar = document.getElementById('custom-range-bar');
+      if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
+      renderExpenses();
+    });
+  }
 
   // ── Custom date range ───────────────────────────────────
   const applyRangeBtn = document.getElementById('apply-range-btn');
@@ -2890,6 +2961,31 @@ function setupEventListeners() {
   const budgetResetBtn = document.getElementById('budget-reset-btn');
   if (budgetSaveBtn) budgetSaveBtn.addEventListener('click', saveBudgetAllocations);
   if (budgetResetBtn) budgetResetBtn.addEventListener('click', resetBudgetAllocations);
+
+  // ── Budget period filter tabs ───────────────────────────
+  document.querySelectorAll('#view-budget .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#view-budget .filter-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      budgetTimeFilter = tab.dataset.bfilter;
+      const rangeBar = document.getElementById('budget-range-bar');
+      if (rangeBar) rangeBar.style.display = budgetTimeFilter === 'range' ? 'flex' : 'none';
+      renderBudgetPlanner();
+    });
+  });
+
+  const budgetApplyRange = document.getElementById('budget-apply-range');
+  if (budgetApplyRange) {
+    budgetApplyRange.addEventListener('click', () => {
+      budgetRangeFrom = document.getElementById('budget-from-month').value || '';
+      budgetRangeTo = document.getElementById('budget-to-month').value || '';
+      renderBudgetPlanner();
+    });
+  }
 
   // ── Analytics: month select ─────────────────────────────
   const anMonthSel = document.getElementById('analytics-month-select');

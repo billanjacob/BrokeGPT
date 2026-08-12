@@ -37,11 +37,12 @@ async function attemptLogin(userid, password) {
 
 async function loadData() {
   try {
-    const [settingsRes, monthsRes, expensesRes] = await Promise.race([
+    const [settingsRes, monthsRes, expensesRes, billsRes] = await Promise.race([
       Promise.all([
         db.from('bgpt_settings').select('*').eq('id', 1).single(),
         db.from('bgpt_months').select('*'),
         db.from('bgpt_expenses').select('*'),
+        db.from('bgpt_bills').select('*'),
       ]),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase timeout')), 6000)),
     ]);
@@ -77,8 +78,10 @@ async function loadData() {
       }
     });
 
+    const bills = (billsRes.data || []).map(b => ({ id: b.id, name: b.name, amount: b.amount }));
+
     cloudAvailable = true;
-    return { version: APP_VERSION, settings, categories, months };
+    return { version: APP_VERSION, settings, categories, months, bills };
   } catch {
     cloudAvailable = false;
     return deepClone(DEFAULT_DATA);
@@ -141,6 +144,25 @@ function syncDeleteExpense(expenseId) {
   });
 }
 
+function syncInsertBill(bill) {
+  if (!cloudAvailable) return;
+  db.from('bgpt_bills').insert({ id: bill.id, name: bill.name, amount: bill.amount })
+    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
+}
+
+function syncUpdateBill(bill) {
+  if (!cloudAvailable) return;
+  db.from('bgpt_bills').update({ name: bill.name, amount: bill.amount })
+    .eq('id', bill.id)
+    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
+}
+
+function syncDeleteBill(id) {
+  if (!cloudAvailable) return;
+  db.from('bgpt_bills').delete().eq('id', id)
+    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
+}
+
 /* ============================================================
    MONTH MANAGEMENT
    ============================================================ */
@@ -163,6 +185,23 @@ function getAllMonths() {
     if (b.year !== a.year) return b.year - a.year;
     return b.month - a.month;
   });
+}
+
+function getBudgetMonthIds() {
+  const allIds = Object.keys(appData.months).sort();
+  if (budgetTimeFilter === 'last-month') {
+    const [y, m] = currentMonthId.split('-').map(Number);
+    const d = new Date(y, m - 2, 1);
+    const lastId = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return appData.months[lastId] ? [lastId] : [];
+  }
+  if (budgetTimeFilter === 'range') {
+    const from = budgetRangeFrom || currentMonthId;
+    const to = budgetRangeTo || currentMonthId;
+    return allIds.filter(id => id >= from && id <= to);
+  }
+  if (budgetTimeFilter === 'all') return allIds.length ? allIds : [currentMonthId];
+  return [currentMonthId];
 }
 
 /* ============================================================
