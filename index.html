@@ -106,6 +106,10 @@
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">history</span>
         <span class="nav-label">History</span>
       </a>
+      <a href="#" class="nav-item" data-view="fuel" role="button">
+        <span class="material-symbols-rounded nav-icon" aria-hidden="true">local_gas_station</span>
+        <span class="nav-label">Fuel</span>
+      </a>
       <a href="#" class="nav-item" data-view="settings" role="button">
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">settings</span>
         <span class="nav-label">Settings</span>
@@ -961,9 +965,54 @@
               of Claude AI. Powered by Supabase and chronic financial anxiety. No frameworks were harmed in the making
               of this app, but several savings goals were.</p>
             <div class="about-version">Version 1.0.0 · MIT License</div>
-            <div class="about-version" id="about-last-update">Last Updated: 2026-08-17 · U59</div>
+            <div class="about-version" id="about-last-update">Last Updated: 2026-08-17 · U67</div>
           </div>
 
+        </div>
+
+      </section>
+
+      <!-- ================================================
+         VIEW: FUEL (Baleno)
+         ================================================ -->
+      <section class="view" id="view-fuel" aria-label="Baleno Fuel Expenses">
+
+        <div class="view-header">
+          <h1 class="view-title">Fuel</h1>
+        </div>
+
+        <!-- Dashboard panel -->
+        <div class="fuel-dashboard">
+          <div class="fuel-dash-left">
+            <span class="fuel-dash-label">BALENO · ALL-TIME</span>
+            <div class="fuel-dash-total" id="fuel-total">₹0</div>
+            <span class="fuel-dash-sub" id="fuel-count">0 fills</span>
+          </div>
+          <div class="fuel-dash-divider"></div>
+          <div class="fuel-dash-right">
+            <div class="fuel-dash-stat">
+              <span class="fuel-dash-stat-value" id="fuel-avg">₹0</span>
+              <span class="fuel-dash-stat-label">per month</span>
+            </div>
+            <div class="fuel-dash-stat">
+              <span class="fuel-dash-stat-value" id="fuel-last">—</span>
+              <span class="fuel-dash-stat-label">last fill</span>
+            </div>
+            <div class="fuel-dash-stat">
+              <span class="fuel-dash-stat-value" id="fuel-mileage">—</span>
+              <span class="fuel-dash-stat-label">km / litre</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fill-up log -->
+        <div class="fuel-log-card">
+          <div id="fuel-list"></div>
+          <div class="empty-state" id="fuel-empty" style="display:none">
+            <span class="material-symbols-rounded empty-icon" aria-hidden="true">local_gas_station</span>
+            <h3>No Baleno fuel entries</h3>
+            <p>Add expenses in the Fuel category with "Baleno" in the name.</p>
+          </div>
         </div>
 
       </section>

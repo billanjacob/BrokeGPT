@@ -1560,6 +1560,157 @@ function addCategory(name) {
   renderCatPicker();
 }
 
+/* ============================================================
+   RENDER — FUEL (Baleno) VIEW
+   ============================================================ */
+
+function parseFuelNote(note) {
+  if (!note) return { liters: null, odo: null };
+  let liters = null, odo = null;
+
+  // Liters: number + optional space + l/L/liter/liters/litre/litres
+  const lMatch = note.match(/(\d+(?:\.\d+)?)\s*[Ll](?:iter[s]?|itre[s]?)?(?!\w)/);
+  if (lMatch) {
+    const v = parseFloat(lMatch[1]);
+    if (v > 0 && v < 50) liters = v;
+  }
+
+  // Odometer: number + optional space + km/KM
+  const kMatch = note.match(/(\d+(?:\.\d+)?)\s*[Kk][Mm](?!\w)/);
+  if (kMatch) {
+    const v = parseFloat(kMatch[1]);
+    if (v > 1000) odo = v;
+  }
+
+  // Fallback: scan remaining numbers using size heuristic
+  if (liters === null || odo === null) {
+    let remaining = note;
+    if (lMatch) remaining = remaining.replace(lMatch[0], ' ');
+    if (kMatch) remaining = remaining.replace(kMatch[0], ' ');
+    const nums = [...remaining.matchAll(/\b(\d+(?:\.\d+)?)\b/g)].map(m => parseFloat(m[1]));
+    for (const v of nums) {
+      if (liters === null && v > 0 && v < 50) liters = v;
+      else if (odo === null && v > 1000) odo = v;
+    }
+  }
+
+  return { liters, odo };
+}
+
+function calcBalenoMileage(fills) {
+  // fills sorted oldest-first, each has .odo and .liters attached
+  const FIRST_ODO = 20; // car's odometer at first fill (hardcoded)
+  const withOdo = fills.filter(e => e.odo != null);
+  if (withOdo.length < 1) return null;
+
+  // Endpoint = latest fill that has a valid odo reading
+  const endpoint = withOdo[withOdo.length - 1];
+  const dist = endpoint.odo - FIRST_ODO;
+  if (dist <= 0) return null;
+
+  // All liters from fills up to and including the endpoint
+  const litUsed = fills
+    .filter(e => e.liters != null && e.date <= endpoint.date)
+    .reduce((s, e) => s + e.liters, 0);
+  if (litUsed <= 0) return null;
+
+  return dist / litUsed;
+}
+
+function renderFuel() {
+  const allExpenses = [];
+  Object.values(appData.months).forEach(m => {
+    (m.expenses || []).forEach(e => {
+      if (
+        e.category.toLowerCase() === 'fuel' &&
+        e.name.toLowerCase().includes('baleno')
+      ) {
+        const parsed = parseFuelNote(e.note);
+        allExpenses.push({ ...e, monthId: m.id, liters: parsed.liters, odo: parsed.odo });
+      }
+    });
+  });
+
+  allExpenses.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const total = allExpenses.reduce((s, e) => s + e.amount, 0);
+  const monthsWithData = [...new Set(allExpenses.map(e => e.monthId))];
+  const avg = monthsWithData.length > 0 ? total / monthsWithData.length : 0;
+  const lastFill = allExpenses.length > 0 ? formatDateShort(allExpenses[0].date) : '—';
+
+  // Mileage uses oldest-first order
+  const oldestFirst = [...allExpenses].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const mileage = calcBalenoMileage(oldestFirst);
+
+  const elTotal    = document.getElementById('fuel-total');
+  const elCount    = document.getElementById('fuel-count');
+  const elAvg      = document.getElementById('fuel-avg');
+  const elLast     = document.getElementById('fuel-last');
+  const elMileage  = document.getElementById('fuel-mileage');
+  const elList     = document.getElementById('fuel-list');
+  const elEmpty    = document.getElementById('fuel-empty');
+
+  if (elTotal)   elTotal.textContent   = formatCurrency(total);
+  if (elCount)   elCount.textContent   = `${allExpenses.length} fill${allExpenses.length !== 1 ? 's' : ''}`;
+  if (elAvg)     elAvg.textContent     = formatCurrency(avg);
+  if (elLast)    elLast.textContent    = lastFill;
+  if (elMileage) elMileage.textContent = mileage != null ? `${mileage.toFixed(1)}` : '—';
+
+  if (allExpenses.length === 0) {
+    if (elList)  elList.innerHTML = '';
+    if (elEmpty) elEmpty.style.display = 'flex';
+    return;
+  }
+
+  if (elEmpty) elEmpty.style.display = 'none';
+
+  const byMonth = {};
+  allExpenses.forEach(e => {
+    if (!byMonth[e.monthId]) byMonth[e.monthId] = [];
+    byMonth[e.monthId].push(e);
+  });
+
+  const sortedMonths = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
+
+  let globalIdx = 0;
+  if (elList) {
+    elList.innerHTML = sortedMonths.map(monthId => {
+      const exps = byMonth[monthId];
+      const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
+      const rows = exps.map(e => {
+        globalIdx++;
+        const metaParts = [];
+        if (e.liters != null) metaParts.push(`${e.liters}L`);
+        if (e.odo != null)    metaParts.push(`Odo ${e.odo.toLocaleString('en-IN')} km`);
+        if (e.note)           metaParts.push(escapeHtml(e.note));
+        const metaLine = metaParts.length
+          ? `<span class="flog-fuel-meta">${metaParts.join(' · ')}</span>`
+          : '';
+        return `
+        <div class="flog-row">
+          <span class="flog-n">#${globalIdx}</span>
+          <span class="flog-date">${formatDateShort(e.date)}</span>
+          <span class="flog-name-col">
+            <span class="flog-name">${escapeHtml(e.name)}</span>
+            ${metaLine}
+          </span>
+          <span class="flog-mode">${escapeHtml(e.mode || 'Cash')}</span>
+          <span class="flog-amt">${formatCurrency(e.amount)}</span>
+        </div>`;
+      }).join('');
+
+      return `
+        <div class="flog-section">
+          <div class="flog-month-sep">
+            <span class="flog-month-name">${formatMonthName(monthId)}</span>
+            <span class="flog-month-total">${formatCurrency(monthTotal)}</span>
+          </div>
+          ${rows}
+        </div>`;
+    }).join('');
+  }
+}
+
 function deleteCategory(name) {
   if (DEFAULT_CATEGORIES.includes(name)) {
     showToast('Default categories cannot be deleted.', 'warning'); return;

@@ -85,6 +85,7 @@ function navigateTo(viewName) {
   if (viewName === 'budget') renderBudgetPlanner();
   if (viewName === 'history') renderHistory();
   if (viewName === 'settings') renderSettings();
+  if (viewName === 'fuel') renderFuel();
 }
 
 /* ============================================================
@@ -99,6 +100,7 @@ function refreshCurrentView() {
   if (currentView === 'budget') renderBudgetPlanner();
   if (currentView === 'history') renderHistory();
   if (currentView === 'settings') renderSettings();
+  if (currentView === 'fuel') renderFuel();
 }
 
 /* ============================================================
@@ -687,7 +689,15 @@ function setupEventListeners() {
   }
 
   // ── Filter reset buttons ────────────────────────────────
-  function resetPeriodFilter() {
+  function resetAllExpenseFilters() {
+    // Search
+    searchQuery = '';
+    const searchInput = document.getElementById('search-input');
+    const clearSearch = document.getElementById('clear-search');
+    if (searchInput) searchInput.value = '';
+    if (clearSearch) clearSearch.style.display = 'none';
+
+    // Period
     activeTimeFilter = 'month';
     customRangeFrom = null;
     customRangeTo = null;
@@ -700,62 +710,53 @@ function setupEventListeners() {
     if (periodSel) periodSel.value = 'month';
     const rangeBar = document.getElementById('custom-range-bar');
     if (rangeBar) rangeBar.style.display = 'none';
+    const dateFrom = document.getElementById('date-from');
+    const dateTo = document.getElementById('date-to');
+    if (dateFrom) dateFrom.value = '';
+    if (dateTo) dateTo.value = '';
+
+    // Category
+    activeCatFilter = 'all';
+
     renderExpenses();
   }
 
-  const resetPeriodBtn = document.getElementById('reset-period-filter');
-  if (resetPeriodBtn) resetPeriodBtn.addEventListener('click', resetPeriodFilter);
-
-  const resetPeriodDesktopBtn = document.getElementById('reset-period-filter-desktop');
-  if (resetPeriodDesktopBtn) resetPeriodDesktopBtn.addEventListener('click', resetPeriodFilter);
-
-  const resetCatBtn = document.getElementById('reset-cat-filter');
-  if (resetCatBtn) {
-    resetCatBtn.addEventListener('click', () => {
-      activeCatFilter = 'all';
-      renderExpenses();
-    });
+  function resetBudgetFilters() {
+    budgetTimeFilter = 'month';
+    renderBudgetPlanner();
   }
 
-  const resetCatDropdownBtn = document.getElementById('reset-cat-filter-dropdown');
-  if (resetCatDropdownBtn) {
-    resetCatDropdownBtn.addEventListener('click', () => {
-      activeCatFilter = 'all';
-      renderExpenses();
-    });
+  function resetAnalyticsFilters() {
+    analyticsMonthId = currentMonthId;
+    const anSel = document.getElementById('analytics-month-select');
+    if (anSel) anSel.value = analyticsMonthId;
+    renderAnalytics();
   }
+
+  function resetTrendsFilters() {
+    const now = new Date();
+    trendFromMonth = `${now.getFullYear()}-01`;
+    trendToMonth = currentMonthId;
+    const trFrom = document.getElementById('trends-from-select');
+    const trTo = document.getElementById('trends-to-select');
+    if (trFrom) trFrom.value = trendFromMonth;
+    if (trTo) trTo.value = trendToMonth;
+    renderTrends();
+  }
+
+  ['reset-period-filter', 'reset-period-filter-desktop', 'reset-cat-filter', 'reset-cat-filter-dropdown'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', resetAllExpenseFilters);
+  });
 
   const resetBudgetBtn = document.getElementById('reset-budget-filter');
-  if (resetBudgetBtn) {
-    resetBudgetBtn.addEventListener('click', () => {
-      budgetTimeFilter = 'month';
-      renderBudgetPlanner();
-    });
-  }
+  if (resetBudgetBtn) resetBudgetBtn.addEventListener('click', resetBudgetFilters);
 
   const resetAnalyticsBtn = document.getElementById('reset-analytics-month');
-  if (resetAnalyticsBtn) {
-    resetAnalyticsBtn.addEventListener('click', () => {
-      analyticsMonthId = currentMonthId;
-      const anSel = document.getElementById('analytics-month-select');
-      if (anSel) anSel.value = analyticsMonthId;
-      renderAnalytics();
-    });
-  }
+  if (resetAnalyticsBtn) resetAnalyticsBtn.addEventListener('click', resetAnalyticsFilters);
 
   const resetTrendsBtn = document.getElementById('reset-trends-range');
-  if (resetTrendsBtn) {
-    resetTrendsBtn.addEventListener('click', () => {
-      const now = new Date();
-      trendFromMonth = `${now.getFullYear()}-01`;
-      trendToMonth = currentMonthId;
-      const trFrom = document.getElementById('trends-from-select');
-      const trTo = document.getElementById('trends-to-select');
-      if (trFrom) trFrom.value = trendFromMonth;
-      if (trTo) trTo.value = trendToMonth;
-      renderTrends();
-    });
-  }
+  if (resetTrendsBtn) resetTrendsBtn.addEventListener('click', resetTrendsFilters);
 
   // ── Budget period filter tabs ───────────────────────────
   document.querySelectorAll('#view-budget .filter-tab').forEach(tab => {

@@ -2369,6 +2369,212 @@ body.sidebar-collapsed .main-content {
 }
 
 /* ============================================================
+   FUEL VIEW
+   ============================================================ */
+
+/* ── Dashboard panel ─────────────────────────────────────── */
+.fuel-dashboard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #0F172A;
+  border-radius: var(--radius-xl);
+  padding: 32px 36px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.fuel-dash-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fuel-dash-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.fuel-dash-total {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  color: #F1F5F9;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.fuel-dash-sub {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.fuel-dash-divider {
+  width: 1px;
+  height: 56px;
+  background: #1E293B;
+  margin: 0 36px;
+  flex-shrink: 0;
+}
+
+.fuel-dash-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.fuel-dash-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.fuel-dash-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #CBD5E1;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.fuel-dash-stat-label {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+
+/* ── Fill-up log card ────────────────────────────────────── */
+.fuel-log-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.flog-section + .flog-section {
+  border-top: 1px solid var(--border);
+}
+
+.flog-month-sep {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px 8px;
+  background: var(--surface-2);
+}
+
+.flog-month-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.flog-month-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.flog-row {
+  display: grid;
+  grid-template-columns: 32px 80px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.flog-row:hover {
+  background: var(--surface-2);
+}
+
+.flog-n {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.flog-date {
+  font-size: 12px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.flog-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.flog-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flog-fuel-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flog-note {
+  font-weight: 400;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.flog-mode {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.flog-amt {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .fuel-dashboard { padding: 24px 20px; }
+  .fuel-dash-divider { margin: 0 20px; }
+  .fuel-dash-watermark { font-size: 80px; }
+  .flog-row { grid-template-columns: 28px 72px 1fr auto; }
+  .flog-mode { display: none; }
+}
+
+/* ============================================================
    SETTINGS VIEW
    ============================================================ */
 .settings-layout {
