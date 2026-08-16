@@ -292,30 +292,6 @@ function renderDashboard() {
     }
   }
 
-  // Bills Buffer card (safe-to-spend after subtracting default bills total)
-  const bbSafeEl = document.getElementById('stat-bills-safe');
-  const bbSubEl = document.getElementById('stat-bills-safe-sub');
-  if (bbSafeEl) {
-    const bills = appData.bills || [];
-    const totalBills = bills.reduce((s, b) => s + b.amount, 0);
-    const safeToSpend = stats.nonLoanRemaining - totalBills;
-    bbSafeEl.className = 'stat-value';
-    if (stats.salary > 0) {
-      bbSafeEl.textContent = (safeToSpend < 0 ? '-' : '') + formatFullAmount(Math.abs(safeToSpend));
-      if (safeToSpend < 0) bbSafeEl.classList.add('danger');
-      else if (stats.nonLoanPct >= 80) bbSafeEl.classList.add('warning');
-      else bbSafeEl.classList.add('success');
-      if (bbSubEl) {
-        bbSubEl.textContent = bills.length > 0
-          ? `${formatCurrency(totalBills)} in ${bills.length} bill${bills.length !== 1 ? 's' : ''}`
-          : 'No bills added · Go to Bills';
-      }
-    } else {
-      bbSafeEl.textContent = '₹0';
-      if (bbSubEl) bbSubEl.textContent = 'Set salary to calculate';
-    }
-  }
-
   // Colour remaining card based on health
   const remainingVal = document.getElementById('stat-remaining');
   remainingVal.className = 'stat-value';
@@ -486,6 +462,9 @@ function buildExpenseItemHtml(e, compact) {
   const excludedTag = e.name.toLowerCase().includes('loan')
     ? `<span class="expense-excl-badge">Excl. 50%</span>`
     : '';
+  const paidTag = e.paid
+    ? ''
+    : `<span class="expense-paid-badge unpaid">Unpaid</span>`;
   return `
     <div class="expense-item" data-id="${escapeHtml(e.id)}">
       <div class="expense-cat-icon" style="background:${meta.color}18;color:${meta.color}" aria-hidden="true">
@@ -499,11 +478,12 @@ function buildExpenseItemHtml(e, compact) {
           <span class="expense-date-label">${compact ? formatDateShort(e.date) : formatDate(e.date)}</span>
           <span class="expense-mode-badge ${(e.mode || 'Cash') === 'Cash' ? 'cash' : (e.mode || '') === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode || 'Cash')}</span>
           ${excludedTag}
+          ${paidTag}
           ${noteTag}
         </div>
       </div>
       <div class="expense-right">
-        <div class="expense-amount">${formatCurrency(e.amount)}</div>
+        <div class="expense-amount${e.amount < 0 ? ' income' : ''}">${e.amount < 0 ? '+ ' : ''}${formatCurrency(e.amount)}</div>
         <div class="expense-actions">
           <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit expense ${escapeHtml(e.name)}">
             <span class="material-symbols-rounded">edit</span>
@@ -521,13 +501,16 @@ function buildExpenseTileHtml(e) {
   const excludedTag = e.name.toLowerCase().includes('loan')
     ? `<span class="expense-excl-badge">Excl. 50%</span>`
     : '';
+  const paidTag = e.paid
+    ? ''
+    : `<span class="expense-paid-badge unpaid">Unpaid</span>`;
   return `
     <div class="expense-tile" data-id="${escapeHtml(e.id)}">
       <div class="expense-tile-header" style="background:${meta.color}18">
         <div class="expense-tile-icon" style="color:${meta.color}">
           <span class="material-symbols-rounded">${meta.icon}</span>
         </div>
-        <div class="expense-tile-amount">${formatCurrency(e.amount)}</div>
+        <div class="expense-tile-amount${e.amount < 0 ? ' income' : ''}">${e.amount < 0 ? '+ ' : ''}${formatCurrency(e.amount)}</div>
       </div>
       <div class="expense-tile-body">
         <div class="expense-tile-name">${escapeHtml(e.name)}</div>
@@ -536,7 +519,7 @@ function buildExpenseTileHtml(e) {
           <span class="expense-tile-date">${formatDateShort(e.date)}</span>
         </div>
         <div class="expense-tile-footer">
-          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : e.mode === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode)}</span>` : ''}${excludedTag}</span>
+          <span>${e.mode ? `<span class="expense-mode-badge ${e.mode === 'Cash' ? 'cash' : e.mode === 'GPay' ? 'gpay' : ''}">${escapeHtml(e.mode)}</span>` : ''}${excludedTag}${paidTag}</span>
           <div class="expense-tile-actions">
             <button class="icon-btn" data-action="edit" data-id="${escapeHtml(e.id)}" aria-label="Edit ${escapeHtml(e.name)}">
               <span class="material-symbols-rounded">edit</span>
@@ -1380,57 +1363,6 @@ function renderHistory() {
     card.addEventListener('click', activate);
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
-    });
-  });
-}
-
-/* ============================================================
-   RENDER — BILLS VIEW
-   ============================================================ */
-
-function renderBills() {
-  const bills = appData.bills || [];
-  const total = bills.reduce((s, b) => s + b.amount, 0);
-  const cur = appData.settings.currency;
-
-  const totalEl = document.getElementById('bills-total');
-  const subEl = document.getElementById('bills-summary-sub');
-  if (totalEl) totalEl.textContent = formatFullAmount(total);
-  if (subEl) subEl.textContent = `${bills.length} bill${bills.length !== 1 ? 's' : ''} · deducted from 50% budget`;
-
-  const list = document.getElementById('bills-list');
-  const emptyEl = document.getElementById('bills-empty');
-  if (!list) return;
-
-  if (bills.length === 0) {
-    list.innerHTML = '';
-    if (emptyEl) emptyEl.style.display = 'flex';
-    return;
-  }
-  if (emptyEl) emptyEl.style.display = 'none';
-
-  list.innerHTML = bills.map(b => `
-    <div class="bill-item" data-id="${escapeHtml(b.id)}">
-      <div class="bill-item-icon" aria-hidden="true">
-        <span class="material-symbols-rounded">receipt_long</span>
-      </div>
-      <div class="bill-item-name">${escapeHtml(b.name)}</div>
-      <div class="bill-item-amount">${formatCurrency(b.amount)}</div>
-      <div class="bill-item-actions">
-        <button class="icon-btn" data-action="edit" data-id="${escapeHtml(b.id)}" aria-label="Edit ${escapeHtml(b.name)}">
-          <span class="material-symbols-rounded">edit</span>
-        </button>
-        <button class="icon-btn danger" data-action="delete" data-id="${escapeHtml(b.id)}" aria-label="Delete ${escapeHtml(b.name)}">
-          <span class="material-symbols-rounded">delete</span>
-        </button>
-      </div>
-    </div>`).join('');
-
-  list.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      if (btn.dataset.action === 'edit') openEditBillModal(btn.dataset.id);
-      if (btn.dataset.action === 'delete') deleteBill(btn.dataset.id);
     });
   });
 }

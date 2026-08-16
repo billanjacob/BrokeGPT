@@ -4,10 +4,50 @@
 Pure HTML + CSS + Vanilla JS (no frameworks). Backend is **Supabase** — data is read/written directly from the browser via the Supabase JS SDK (loaded from CDN). No localStorage — all persistence goes through Supabase.
 
 ## Supabase
-- Client initialised in `js/app.js` with `SUPABASE_URL` + `SUPABASE_KEY` (anon key)
-- Tables: `bgpt_settings`, `bgpt_months`, `bgpt_expenses`, `tbl_users`
+- Client initialised in `js/data.js` with `SUPABASE_URL` + `SUPABASE_KEY` (anon key)
+- Tables: `tbl_users`, `bgpt_settings`, `bgpt_months`, `bgpt_expenses`
 - `loadData()` fetches all three app tables on init; a loading screen stays visible until the fetch resolves (6s timeout before falling back to default data)
 - Writes: upsert for settings/months, insert/update/delete for expenses — all fire-and-forget (no await at call sites)
+
+## Database Schema
+
+### `tbl_users`
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `userid` | text | NO | — | PK, login username |
+| `password` | text | NO | — | plain-text password |
+
+### `bgpt_settings` (single row, id = 1)
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `id` | integer | NO | `1` | always 1 |
+| `dark_mode` | boolean | YES | `false` | |
+| `currency` | text | YES | `'₹'` | |
+| `default_salary` | numeric | YES | `0` | auto-fill for new months |
+| `budget_allocations` | jsonb | YES | `null` | null = use DEFAULT_BUDGET_ALLOCATIONS |
+| `categories` | jsonb | YES | `null` | array of category name strings |
+| `custom_category_meta` | jsonb | YES | `'{}'` | `{ "CatName": { "icon": "...", "color": "#..." } }` |
+
+### `bgpt_months`
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `id` | text | NO | — | PK, format `YYYY-MM` |
+| `salary` | numeric | YES | `0` | |
+| `salary_set` | boolean | YES | `false` | false = user hasn't set salary yet |
+
+### `bgpt_expenses`
+| Column | Type | Nullable | Default | Notes |
+|--------|------|----------|---------|-------|
+| `id` | text | NO | — | PK, generated via `generateId('exp')` |
+| `month_id` | text | YES | — | FK → `bgpt_months.id` |
+| `name` | text | NO | — | |
+| `amount` | numeric | NO | — | |
+| `category` | text | NO | — | must match a value in `bgpt_settings.categories` |
+| `date` | text | NO | — | `YYYY-MM-DD` |
+| `note` | text | YES | `''` | |
+| `mode` | text | YES | `'Cash'` | `'Cash'` or `'GPay'` |
+| `timestamp` | bigint | YES | — | `Date.now()` at creation |
+| `created_at` | timestamptz | YES | `now()` | set by Supabase automatically |
 
 ## Files
 - `index.html` — all views as `<section class="view">` elements; one active at a time
@@ -15,14 +55,14 @@ Pure HTML + CSS + Vanilla JS (no frameworks). Backend is **Supabase** — data i
 - `js/constants.js` — `DEFAULT_CATEGORIES`, `CATEGORY_META`, `NAME_CATEGORY_RULES`, color/icon palettes
 - `js/state.js` — `appData` and other mutable state
 - `js/utils.js` — pure helper functions
-- `js/data.js` — Supabase `loadData()`, `syncSettings()`, `syncMonth()`
+- `js/data.js` — Supabase client init, `loadData()`, `syncSettings()`, `syncMonth()`, `syncInsertExpense()`, `syncUpdateExpense()`, `syncDeleteExpense()`
 - `js/calc.js` — budget/analytics calculations
 - `js/render.js` — all DOM rendering functions
 - `js/app.js` — `init()`, event wiring, `navigateTo()`, boots on DOMContentLoaded
 - **NOTE: `script.js` at root is NOT loaded by `index.html` — never edit it**
 
 ## Views / Nav Order
-Dashboard → Expenses → Analytics → Budget → History → Settings
+Dashboard → Expenses → Analytics → Trends → Budget → History → Settings
 
 ## Data Shape
 ```

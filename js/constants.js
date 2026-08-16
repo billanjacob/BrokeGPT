@@ -106,5 +106,4 @@ const DEFAULT_DATA = {
   },
   categories: [...DEFAULT_CATEGORIES],
   months: {},
-  bills: [],
 };

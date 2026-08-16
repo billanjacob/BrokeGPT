@@ -19,7 +19,7 @@ function getMonthIdFromDate(dateStr) {
 }
 
 function formatAmountInput(raw) {
-  // Keep only digits and one decimal point
+  const isNegative = raw.startsWith('-');
   let val = raw.replace(/[^0-9.]/g, '');
   const dotIdx = val.indexOf('.');
   if (dotIdx !== -1) {
@@ -27,7 +27,8 @@ function formatAmountInput(raw) {
   }
   const [intPart, decPart] = val.split('.');
   const formatted = intPart ? Number(intPart).toLocaleString('en-IN') : '';
-  return decPart !== undefined ? formatted + '.' + decPart : formatted;
+  const result = decPart !== undefined ? formatted + '.' + decPart : formatted;
+  return isNegative && result ? '-' + result : result;
 }
 
 function parseAmountInput(val) {

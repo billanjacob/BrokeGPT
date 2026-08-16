@@ -2,15 +2,7 @@
 
 > **Powered by regret.**
 
-A production-quality personal finance tracker built with pure HTML, CSS, and Vanilla JavaScript. No frameworks, no build tools, no backend — just open `index.html` and start tracking your inevitable financial decline.
-
----
-
-## Screenshots
-
-| Dashboard | Expenses | Analytics |
-|-----------|----------|-----------|
-| *(Add screenshot here)* | *(Add screenshot here)* | *(Add screenshot here)* |
+A production-quality personal finance tracker built with pure HTML, CSS, and Vanilla JavaScript. Backed by Supabase for cloud persistence. No frameworks, no build tools — just open `index.html` and start tracking your inevitable financial decline.
 
 ---
 
@@ -18,49 +10,50 @@ A production-quality personal finance tracker built with pure HTML, CSS, and Van
 
 ### Core
 - **Monthly salary tracking** — Set your salary once per month, edit anytime
-- **Expense management** — Add, edit, and delete expenses with name, amount, category, date, and notes
-- **Fixed expenses** — Auto-copied to every new month (Car EMI, rent, subscriptions, etc.)
+- **Expense management** — Add, edit, and delete expenses with name, amount, category, date, note, and payment mode
 - **Dashboard** — Real-time stats: salary, spent, remaining, savings, daily limit, days remaining
-- **Progress bar** — Visual month progress with percentage
+- **Progress bar** — Visual month progress with percentage and day counter
 
 ### Insights
 - **Analytics** — Monthly spending bar chart, category donut chart, savings trend line chart
-- **Category breakdown** — Spending by category with percentages
-- **Monthly history** — Browse all past months forever
+- **Category breakdown** — Spending by category with bar graphs and percentages
+- **Trends** — Multi-month category comparison with heatmap table
+- **Monthly history** — Browse all past months
 
-### Productivity
-- **Live search** — Instant search by name, category, or amount
-- **Smart filters** — Today, this week, this month, or custom date range
-- **Category filter** — Filter expenses by any category
-- **50+ funny quotes** — A new quote every page load to ease your financial pain
+### Budget Planner
+- **9-row budget allocation** — EMI, Food, Fuel, Bills, Entertainment, Shopping, Medical, Savings, Emergency
+- **Editable percentages** — Customise allocations, validated to sum to 100%
+- **Health indicator** — Excellent / Good / Caution / Critical based on remaining salary
+- **Multi-period view** — This month, last month, date range, or all time
 
-### Data
-- **Local Storage** — All data stored locally, no account needed
-- **JSON backup** — Export all data, import to restore
-- **Data validation** — Imported backups are validated before applying
+### 50% Rule
+- Tracks non-loan expenses against 50% of salary
+- Automatically excludes expenses whose name contains "loan"
+- Shows remaining headroom on dashboard
 
 ### UX
 - **Dark mode** — Full dark/light theme toggle
+- **Tile / List view** — Toggle between grouped list and tile grid for expenses
+- **Payment mode** — GPay or Cash badge on every expense; GPay auto-detected by keyword
+- **Smart category guess** — Expense name auto-maps to a category via keyword rules
+- **Duplicate detection** — Warns when adding an expense that matches an existing one
 - **Responsive design** — Desktop, tablet, and mobile
 - **Keyboard shortcuts** — `Ctrl+N`, `Ctrl+F`, `Ctrl+D`, `ESC`
-- **Toast notifications** — Animated success/error/warning/info toasts
-- **Smooth animations** — Transitions, modal animations, progress bars
+- **Toast notifications** — Animated success / error / warning / info toasts
 - **Accessible** — ARIA labels, keyboard navigation, focus styles, semantic HTML
+
+### Data
+- **Supabase cloud sync** — All data stored in Supabase; falls back to defaults on timeout
+- **JSON backup / restore** — Export all data as JSON; import to restore
 
 ---
 
 ## Getting Started
 
-### Local
-1. Download or clone this repository
-2. Open `index.html` in any modern browser
-3. No installation, no npm, no build step required
-
-### GitHub Pages
-1. Fork this repository
-2. Go to **Settings → Pages**
-3. Set source to **main branch, / (root)**
-4. Your app is live at `https://yourusername.github.io/BrokeGPT/`
+1. Clone or download the repository
+2. Open `index.html` in any modern browser (or serve via any static host)
+3. Log in with your Supabase-backed user credentials
+4. No npm, no build step required
 
 ---
 
@@ -68,16 +61,23 @@ A production-quality personal finance tracker built with pure HTML, CSS, and Van
 
 ```
 BrokeGPT/
-│
-├── index.html          # Application shell — all views and modals
-├── style.css           # Complete CSS with dark mode and animations
-├── script.js           # Full application logic (~3000 lines)
-├── README.md           # This file
-│
-└── assets/
-    ├── logo.svg        # Brand logo
-    └── favicon.svg     # Browser favicon
+├── index.html          # App shell — all views and modals
+├── style.css           # CSS custom properties, dark mode, all component styles
+├── js/
+│   ├── constants.js    # DEFAULT_CATEGORIES, CATEGORY_META, keyword rules, palettes
+│   ├── state.js        # All mutable app state variables
+│   ├── utils.js        # Pure helper functions (formatting, dates, etc.)
+│   ├── data.js         # Supabase client, loadData(), sync helpers
+│   ├── calc.js         # Budget/analytics calculations, filtering, grouping
+│   ├── render.js       # All DOM rendering functions
+│   └── app.js          # init(), navigateTo(), event wiring, keyboard shortcuts
+├── assets/
+│   └── brokegpt.svg    # Brand logo / favicon
+├── CLAUDE.md           # AI assistant project notes
+└── README.md           # This file
 ```
+
+> `script.js` at the root is NOT loaded by `index.html` — do not edit it.
 
 ---
 
@@ -86,36 +86,20 @@ BrokeGPT/
 | Technology | Purpose |
 |------------|---------|
 | HTML5 | Semantic markup, ARIA accessibility |
-| CSS3 | Custom properties, animations, glassmorphism, responsive layout |
-| Vanilla JavaScript (ES6+) | All application logic, Canvas charts, Local Storage |
-| Material Symbols Rounded | Icons (loaded from Google Fonts CDN) |
-| Inter Font | Typography (loaded from Google Fonts CDN) |
+| CSS3 | Custom properties, animations, responsive layout |
+| Vanilla JavaScript (ES6+) | All application logic, Canvas charts |
+| Supabase JS SDK (CDN) | Cloud database read/write |
+| Material Symbols Rounded | Icons (Google Fonts CDN) |
+| Inter Font | Typography (Google Fonts CDN) |
 | Canvas API | Charts — no external chart libraries |
 
 ---
 
-## Data Storage
+## Database (Supabase)
 
-All data is stored under a single Local Storage key: `brokegpt-data`
+Tables: `tbl_users`, `bgpt_settings`, `bgpt_months`, `bgpt_expenses`
 
-```json
-{
-  "version": "1.0.0",
-  "settings": { "darkMode": false, "currency": "₹", "defaultSalary": 0 },
-  "categories": ["Food", "Fuel", "Shopping", "..."],
-  "fixedExpenses": [{ "id": "...", "name": "Car EMI", "amount": 14400, "category": "EMI" }],
-  "months": {
-    "2025-06": {
-      "id": "2025-06",
-      "salary": 50000,
-      "expenses": [{ "id": "...", "name": "Groceries", "amount": 500, "category": "Food", "date": "2025-06-15" }],
-      "createdAt": "2025-06-01T00:00:00.000Z"
-    }
-  }
-}
-```
-
-The structure is designed for easy migration to any database (MongoDB, PostgreSQL, Firebase, etc.) in the future.
+See [CLAUDE.md](CLAUDE.md) for the full schema.
 
 ---
 
@@ -130,30 +114,9 @@ The structure is designed for easy migration to any database (MongoDB, PostgreSQ
 
 ---
 
-## Future Roadmap
-
-- [ ] PWA support (offline, installable)
-- [ ] Budget limits per category
-- [ ] Recurring expense scheduling (weekly, quarterly, yearly)
-- [ ] Multiple accounts / wallets
-- [ ] Bill reminders / due date alerts
-- [ ] CSV export
-- [ ] Cloud sync (optional, opt-in)
-- [ ] Goals and savings targets
-- [ ] Exchange rate API for multi-currency
-- [ ] Spending insights and AI-powered suggestions
-
----
-
 ## License
 
 MIT License — do whatever you want with it. Just don't blame us for your financial decisions.
-
----
-
-## Contributing
-
-Pull requests welcome. For major changes, open an issue first to discuss what you'd like to change.
 
 ---
 

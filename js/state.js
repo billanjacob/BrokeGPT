@@ -16,7 +16,6 @@ let expenseViewMode = localStorage.getItem('expenseViewMode') || 'list'; // 'lis
 let trendFromMonth = '';
 let trendToMonth = '';
 let editingExpenseId = null;
-let editingBillId = null;
 let newCatIcon = 'category';
 let newCatColor = '#64748B';
 let editingCatName = null;

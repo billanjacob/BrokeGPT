@@ -37,12 +37,11 @@ async function attemptLogin(userid, password) {
 
 async function loadData() {
   try {
-    const [settingsRes, monthsRes, expensesRes, billsRes] = await Promise.race([
+    const [settingsRes, monthsRes, expensesRes] = await Promise.race([
       Promise.all([
         db.from('bgpt_settings').select('*').eq('id', 1).single(),
         db.from('bgpt_months').select('*'),
         db.from('bgpt_expenses').select('*'),
-        db.from('bgpt_bills').select('*'),
       ]),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase timeout')), 6000)),
     ]);
@@ -74,14 +73,13 @@ async function loadData() {
           id: e.id, name: e.name, amount: e.amount,
           category: e.category, date: e.date, note: e.note || '',
           mode: e.mode || 'Cash', timestamp: e.timestamp,
+          paid: e.paid ?? false,
         });
       }
     });
 
-    const bills = (billsRes.data || []).map(b => ({ id: b.id, name: b.name, amount: b.amount }));
-
     cloudAvailable = true;
-    return { version: APP_VERSION, settings, categories, months, bills };
+    return { version: APP_VERSION, settings, categories, months };
   } catch {
     cloudAvailable = false;
     return deepClone(DEFAULT_DATA);
@@ -122,6 +120,7 @@ function syncInsertExpense(monthId, expense) {
     id: expense.id, month_id: monthId, name: expense.name,
     amount: expense.amount, category: expense.category, date: expense.date,
     note: expense.note || '', mode: expense.mode || 'Cash', timestamp: expense.timestamp,
+    paid: expense.paid ?? false,
   }).then(({ error }) => {
     if (error) showToast('Cloud sync error. Changes may not be saved.', 'error');
   });
@@ -132,6 +131,7 @@ function syncUpdateExpense(expense) {
   db.from('bgpt_expenses').update({
     name: expense.name, amount: expense.amount, category: expense.category,
     date: expense.date, note: expense.note || '', mode: expense.mode || 'Cash',
+    paid: expense.paid ?? false,
   }).eq('id', expense.id).then(({ error }) => {
     if (error) showToast('Cloud sync error. Changes may not be saved.', 'error');
   });
@@ -142,25 +142,6 @@ function syncDeleteExpense(expenseId) {
   db.from('bgpt_expenses').delete().eq('id', expenseId).then(({ error }) => {
     if (error) showToast('Cloud sync error. Changes may not be saved.', 'error');
   });
-}
-
-function syncInsertBill(bill) {
-  if (!cloudAvailable) return;
-  db.from('bgpt_bills').insert({ id: bill.id, name: bill.name, amount: bill.amount })
-    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
-}
-
-function syncUpdateBill(bill) {
-  if (!cloudAvailable) return;
-  db.from('bgpt_bills').update({ name: bill.name, amount: bill.amount })
-    .eq('id', bill.id)
-    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
-}
-
-function syncDeleteBill(id) {
-  if (!cloudAvailable) return;
-  db.from('bgpt_bills').delete().eq('id', id)
-    .then(({ error }) => { if (error) showToast('Cloud sync error. Changes may not be saved.', 'error'); });
 }
 
 /* ============================================================
