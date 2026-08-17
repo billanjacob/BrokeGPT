@@ -503,6 +503,7 @@ function setupLoginScreen() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('loading-screen').style.display = 'flex';
         await init();
+        startIdleWatcher();
       } else {
         document.getElementById('login-error-msg').textContent = 'Invalid user ID or password.';
         errorEl.style.display = 'flex';
@@ -515,6 +516,28 @@ function setupLoginScreen() {
     btn.disabled = false;
     btn.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">login</span> Sign In';
   });
+}
+
+/* ============================================================
+   IDLE / AUTO-LOGOUT
+   ============================================================ */
+
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+let idleTimer = null;
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    clearLoggedInUser();
+    location.reload();
+  }, IDLE_TIMEOUT_MS);
+}
+
+function startIdleWatcher() {
+  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+  resetIdleTimer();
 }
 
 /* ============================================================
@@ -1050,6 +1073,7 @@ async function init() {
 document.addEventListener('DOMContentLoaded', () => {
   if (getLoggedInUser()) {
     init();
+    startIdleWatcher();
   } else {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
