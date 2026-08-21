@@ -1599,22 +1599,15 @@ function parseFuelNote(note) {
 
 function calcBalenoMileage(fills) {
   // fills sorted oldest-first, each has .odo and .liters attached
-  const FIRST_ODO = 20; // car's odometer at first fill (hardcoded)
-  const withOdo = fills.filter(e => e.odo != null);
-  if (withOdo.length < 1) return null;
+  const firstOdo = fills[0]?.odo;
+  const finalOdo = fills[fills.length - 1]?.odo;
+  if (firstOdo == null || finalOdo == null || finalOdo <= firstOdo) return null;
 
-  // Endpoint = latest fill that has a valid odo reading
-  const endpoint = withOdo[withOdo.length - 1];
-  const dist = endpoint.odo - FIRST_ODO;
-  if (dist <= 0) return null;
+  const totalDist   = finalOdo - firstOdo;
+  const totalLiters = fills.reduce((s, e) => s + (e.liters || 0), 0);
+  if (totalLiters <= 0) return null;
 
-  // All liters from fills up to and including the endpoint
-  const litUsed = fills
-    .filter(e => e.liters != null && e.date <= endpoint.date)
-    .reduce((s, e) => s + e.liters, 0);
-  if (litUsed <= 0) return null;
-
-  return dist / litUsed;
+  return { mileage: totalDist / totalLiters, totalDist, totalLiters, firstOdo, finalOdo };
 }
 
 function renderFuel() {
@@ -1654,7 +1647,24 @@ function renderFuel() {
   if (elCount)   elCount.textContent   = `${allExpenses.length} fill${allExpenses.length !== 1 ? 's' : ''}`;
   if (elAvg)     elAvg.textContent     = formatCurrency(avg);
   if (elLast)    elLast.textContent    = lastFill;
-  if (elMileage) elMileage.textContent = mileage != null ? `${mileage.toFixed(1)}` : '—';
+  const mileageStat = elMileage?.closest('.fuel-dash-stat');
+  if (elMileage) {
+    elMileage.textContent = mileage ? `${mileage.mileage.toFixed(1)}` : '—';
+    if (mileageStat) {
+      if (mileage) {
+        mileageStat.style.cursor = 'pointer';
+        mileageStat.title = 'Click for breakdown';
+        mileageStat.onclick = () => showToast(
+          `${mileage.totalLiters.toFixed(1)} L used · ${mileage.totalDist.toLocaleString('en-IN')} km · Odo: ${mileage.firstOdo.toLocaleString('en-IN')} → ${mileage.finalOdo.toLocaleString('en-IN')}`,
+          'info', 5000
+        );
+      } else {
+        mileageStat.style.cursor = '';
+        mileageStat.title = '';
+        mileageStat.onclick = null;
+      }
+    }
+  }
 
   if (allExpenses.length === 0) {
     if (elList)  elList.innerHTML = '';
