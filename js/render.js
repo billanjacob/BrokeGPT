@@ -1635,18 +1635,22 @@ function renderFuel() {
   const oldestFirst = [...allExpenses].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   const mileage = calcBalenoMileage(oldestFirst);
 
-  const elTotal    = document.getElementById('fuel-total');
-  const elCount    = document.getElementById('fuel-count');
-  const elAvg      = document.getElementById('fuel-avg');
-  const elLast     = document.getElementById('fuel-last');
-  const elMileage  = document.getElementById('fuel-mileage');
-  const elList     = document.getElementById('fuel-list');
-  const elEmpty    = document.getElementById('fuel-empty');
+  const totalLitersFilled = oldestFirst.reduce((s, e) => s + (e.liters || 0), 0);
 
-  if (elTotal)   elTotal.textContent   = formatCurrency(total);
-  if (elCount)   elCount.textContent   = `${allExpenses.length} fill${allExpenses.length !== 1 ? 's' : ''}`;
-  if (elAvg)     elAvg.textContent     = formatCurrency(avg);
-  if (elLast)    elLast.textContent    = lastFill;
+  const elTotal        = document.getElementById('fuel-total');
+  const elCount        = document.getElementById('fuel-count');
+  const elAvg          = document.getElementById('fuel-avg');
+  const elTotalLiters  = document.getElementById('fuel-total-liters');
+  const elLast         = document.getElementById('fuel-last');
+  const elMileage      = document.getElementById('fuel-mileage');
+  const elList         = document.getElementById('fuel-list');
+  const elEmpty        = document.getElementById('fuel-empty');
+
+  if (elTotal)       elTotal.textContent       = formatCurrency(total);
+  if (elCount)       elCount.textContent       = `${allExpenses.length} fill${allExpenses.length !== 1 ? 's' : ''}`;
+  if (elAvg)         elAvg.textContent         = formatCurrency(avg);
+  if (elTotalLiters) elTotalLiters.textContent = totalLitersFilled > 0 ? `${totalLitersFilled.toFixed(1)} L` : '—';
+  if (elLast)        elLast.textContent        = lastFill;
   const mileageStat = elMileage?.closest('.fuel-dash-stat');
   if (elMileage) {
     elMileage.textContent = mileage ? `${mileage.mileage.toFixed(1)}` : '—';
