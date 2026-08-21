@@ -1568,21 +1568,21 @@ function parseFuelNote(note) {
   if (!note) return { liters: null, odo: null };
   let liters = null, odo = null;
 
-  // Liters: number + optional space + l/L/liter/liters/litre/litres
+  // Liters: explicit unit suffix — trust the value as-is (no cap)
   const lMatch = note.match(/(\d+(?:\.\d+)?)\s*[Ll](?:iter[s]?|itre[s]?)?(?!\w)/);
   if (lMatch) {
     const v = parseFloat(lMatch[1]);
-    if (v > 0 && v < 50) liters = v;
+    if (v > 0) liters = v;
   }
 
-  // Odometer: number + optional space + km/KM
+  // Odometer: explicit km suffix — trust the value as-is (no minimum)
   const kMatch = note.match(/(\d+(?:\.\d+)?)\s*[Kk][Mm](?!\w)/);
   if (kMatch) {
     const v = parseFloat(kMatch[1]);
-    if (v > 1000) odo = v;
+    if (v >= 0) odo = v;
   }
 
-  // Fallback: scan remaining numbers using size heuristic
+  // Fallback: bare numbers with no unit — apply size heuristic only here
   if (liters === null || odo === null) {
     let remaining = note;
     if (lMatch) remaining = remaining.replace(lMatch[0], ' ');
