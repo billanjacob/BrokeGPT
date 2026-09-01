@@ -8,7 +8,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
-  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets',
+  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets', 'Canteen',
 ];
 
 const CATEGORY_META = {
@@ -31,10 +31,12 @@ const CATEGORY_META = {
   Gym: { icon: 'fitness_center', color: '#84CC16' },
   Groceries: { icon: 'local_grocery_store', color: '#16A34A' },
   Gadgets: { icon: 'devices', color: '#6366F1' },
+  Canteen: { icon: 'lunch_dining', color: '#F59E0B' },
 };
 
 const NAME_CATEGORY_RULES = [
-  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'biriyani', 'diner', 'dining', 'eatery', 'mess', 'canteen', 'food court', 'ikka', 'midtown', 'food', 'fried rice', 'noodles', 'chow mein', 'pasta', 'dosa', 'idli', 'vada', 'paratha', 'naan', 'roti', 'thali', 'sandwich', 'shawarma', 'roll', 'wrap', 'momos', 'pav bhaji', 'chole', 'paneer', 'chicken', 'mutton', 'fish fry', 'omelette'], category: 'Restaurant' },
+  { keywords: ['canteen', 'cafeteria', 'mess food', 'office food', 'college canteen', 'school canteen', 'hostel mess', 'tiffin'], category: 'Canteen' },
+  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'biriyani', 'diner', 'dining', 'eatery', 'mess', 'food court', 'ikka', 'midtown', 'food', 'fried rice', 'noodles', 'chow mein', 'pasta', 'dosa', 'idli', 'vada', 'paratha', 'naan', 'roti', 'thali', 'sandwich', 'shawarma', 'roll', 'wrap', 'momos', 'pav bhaji', 'chole', 'paneer', 'chicken', 'mutton', 'fish fry', 'omelette'], category: 'Restaurant' },
   { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie', 'ice', 'incha'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
