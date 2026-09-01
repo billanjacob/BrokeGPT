@@ -35,8 +35,8 @@ const CATEGORY_META = {
 };
 
 const NAME_CATEGORY_RULES = [
-  { keywords: ['canteen', 'cafeteria', 'mess food', 'office food', 'college canteen', 'school canteen', 'hostel mess', 'tiffin'], category: 'Canteen' },
-  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'biriyani', 'diner', 'dining', 'eatery', 'mess', 'food court', 'ikka', 'midtown', 'food', 'fried rice', 'noodles', 'chow mein', 'pasta', 'dosa', 'idli', 'vada', 'paratha', 'naan', 'roti', 'thali', 'sandwich', 'shawarma', 'roll', 'wrap', 'momos', 'pav bhaji', 'chole', 'paneer', 'chicken', 'mutton', 'fish fry', 'omelette'], category: 'Restaurant' },
+  { keywords: ['canteen', 'cafeteria', 'mess food', 'office food', 'college canteen', 'school canteen', 'hostel mess', 'tiffin', 'ikka kada'], category: 'Canteen' },
+  { keywords: ['zomato', 'swiggy', 'restaurant', 'cafe', 'dhaba', 'burger', 'pizza', 'kfc', 'mcdonald', 'dominos', 'subway', 'biryani', 'biriyani', 'diner', 'dining', 'eatery', 'mess', 'food court', 'midtown', 'food', 'fried rice', 'noodles', 'chow mein', 'pasta', 'dosa', 'idli', 'vada', 'paratha', 'naan', 'roti', 'thali', 'sandwich', 'shawarma', 'roll', 'wrap', 'momos', 'pav bhaji', 'chole', 'paneer', 'chicken', 'mutton', 'fish fry', 'omelette'], category: 'Restaurant' },
   { keywords: ['bakery', 'cake', 'bread', 'pastry', 'bun', 'muffin', 'cookie', 'donut', 'biscuit', 'brownie', 'ice', 'incha'], category: 'Bakery' },
   { keywords: ['petrol', 'diesel', 'fuel', 'iocl', 'bpcl', 'hpcl', 'cng', 'filling station', 'shell', 'indian oil', 'bharat petroleum', 'hp fuel'], category: 'Fuel' },
   { keywords: ['myntra', 'ajio', 'zara', 'levis', 'adidas', 'nike', 'clothes', 'clothing', 'shirt', 'trouser', 'pants', 'shoes', 'sandal', 'bag', 'handbag', 'belt', 'dress', 'jeans', 'kurta', 'saree', 'fashion', 'footwear', 'sneaker'], category: 'Fashion' },
