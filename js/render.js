@@ -1670,6 +1670,10 @@ function renderFuel() {
     }
   }
 
+  // Update toggle icon to reflect current mode
+  const fuelViewIcon = document.getElementById('fuel-view-icon');
+  if (fuelViewIcon) fuelViewIcon.textContent = fuelViewMode === 'monthly' ? 'receipt_long' : 'calendar_month';
+
   if (allExpenses.length === 0) {
     if (elList)  elList.innerHTML = '';
     if (elEmpty) elEmpty.style.display = 'flex';
@@ -1686,42 +1690,58 @@ function renderFuel() {
 
   const sortedMonths = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
 
-  let globalIdx = 0;
   if (elList) {
-    elList.innerHTML = sortedMonths.map(monthId => {
-      const exps = byMonth[monthId];
-      const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
-      const rows = exps.map(e => {
-        globalIdx++;
-        const metaParts = [];
-        if (e.liters != null) metaParts.push(`${e.liters}L`);
-        if (e.odo != null)    metaParts.push(`Odo ${e.odo.toLocaleString('en-IN')} km`);
-        if (e.note)           metaParts.push(escapeHtml(e.note));
-        const metaLine = metaParts.length
-          ? `<span class="flog-fuel-meta">${metaParts.join(' · ')}</span>`
-          : '';
+    if (fuelViewMode === 'monthly') {
+      elList.innerHTML = sortedMonths.map(monthId => {
+        const exps = byMonth[monthId];
+        const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
+        const monthLiters = exps.reduce((s, e) => s + (e.liters || 0), 0);
+        const metaParts = [`${exps.length} fill${exps.length !== 1 ? 's' : ''}`];
+        if (monthLiters > 0) metaParts.push(`${monthLiters.toFixed(1)} L`);
         return `
-        <div class="flog-row">
-          <span class="flog-n">#${globalIdx}</span>
-          <span class="flog-date">${formatDateShort(e.date)}</span>
-          <span class="flog-name-col">
-            <span class="flog-name">${escapeHtml(e.name)}</span>
-            ${metaLine}
-          </span>
-          <span class="flog-mode">${escapeHtml(e.mode || 'Cash')}</span>
-          <span class="flog-amt">${formatCurrency(e.amount)}</span>
-        </div>`;
+          <div class="flog-month-row">
+            <span class="flog-month-row-name">${formatMonthName(monthId)}</span>
+            <span class="flog-month-row-meta">${metaParts.join(' · ')}</span>
+            <span class="flog-month-row-amt">${formatCurrency(monthTotal)}</span>
+          </div>`;
       }).join('');
+    } else {
+      let globalIdx = 0;
+      elList.innerHTML = sortedMonths.map(monthId => {
+        const exps = byMonth[monthId];
+        const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
+        const rows = exps.map(e => {
+          globalIdx++;
+          const metaParts = [];
+          if (e.liters != null) metaParts.push(`${e.liters}L`);
+          if (e.odo != null)    metaParts.push(`Odo ${e.odo.toLocaleString('en-IN')} km`);
+          if (e.note)           metaParts.push(escapeHtml(e.note));
+          const metaLine = metaParts.length
+            ? `<span class="flog-fuel-meta">${metaParts.join(' · ')}</span>`
+            : '';
+          return `
+          <div class="flog-row">
+            <span class="flog-n">#${globalIdx}</span>
+            <span class="flog-date">${formatDateShort(e.date)}</span>
+            <span class="flog-name-col">
+              <span class="flog-name">${escapeHtml(e.name)}</span>
+              ${metaLine}
+            </span>
+            <span class="flog-mode">${escapeHtml(e.mode || 'Cash')}</span>
+            <span class="flog-amt">${formatCurrency(e.amount)}</span>
+          </div>`;
+        }).join('');
 
-      return `
-        <div class="flog-section">
-          <div class="flog-month-sep">
-            <span class="flog-month-name">${formatMonthName(monthId)}</span>
-            <span class="flog-month-total">${formatCurrency(monthTotal)}</span>
-          </div>
-          ${rows}
-        </div>`;
-    }).join('');
+        return `
+          <div class="flog-section">
+            <div class="flog-month-sep">
+              <span class="flog-month-name">${formatMonthName(monthId)}</span>
+              <span class="flog-month-total">${formatCurrency(monthTotal)}</span>
+            </div>
+            ${rows}
+          </div>`;
+      }).join('');
+    }
   }
 }
 

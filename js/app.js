@@ -854,6 +854,13 @@ function setupEventListeners() {
     renderExpenses();
   });
 
+  const fuelViewToggle = document.getElementById('fuel-view-toggle');
+  if (fuelViewToggle) fuelViewToggle.addEventListener('click', () => {
+    fuelViewMode = fuelViewMode === 'fills' ? 'monthly' : 'fills';
+    localStorage.setItem('fuelViewMode', fuelViewMode);
+    renderFuel();
+  });
+
   const catScrollBtn = document.getElementById('cat-chips-scroll-btn');
   if (catScrollBtn) catScrollBtn.addEventListener('click', () => {
     const bar = document.getElementById('cat-chips-bar');
