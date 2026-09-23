@@ -86,6 +86,7 @@ function navigateTo(viewName) {
   if (viewName === 'history') renderHistory();
   if (viewName === 'settings') renderSettings();
   if (viewName === 'fuel') renderFuel();
+  if (viewName === 'search') renderSearchView();
 }
 
 /* ============================================================
@@ -101,6 +102,7 @@ function refreshCurrentView() {
   if (currentView === 'history') renderHistory();
   if (currentView === 'settings') renderSettings();
   if (currentView === 'fuel') renderFuel();
+  if (currentView === 'search') renderSearchView();
 }
 
 /* ============================================================
@@ -235,7 +237,7 @@ function openEditExpenseModal(expenseId) {
   populateCategorySelects();
   document.getElementById('exp-name').value = expense.name;
   document.getElementById('exp-amount').value = formatAmountInput(String(expense.amount));
-  document.getElementById('exp-category').value = expense.category;
+  setCategoryValue(expense.category);
   document.getElementById('exp-date').value = expense.date;
   document.getElementById('exp-note').value = expense.note || '';
   document.getElementById('exp-amount-prefix').textContent = appData.settings.currency || '₹';
@@ -249,12 +251,59 @@ function openEditExpenseModal(expenseId) {
 }
 
 function populateCategorySelects() {
-  const sel = document.getElementById('exp-category');
-  if (!sel) return;
-  const options = [...appData.categories].sort((a, b) => a.localeCompare(b)).map(cat =>
-    `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
-  ).join('');
-  sel.innerHTML = `<option value="" disabled selected>Select category</option>` + options;
+  const searchInput = document.getElementById('exp-cat-search');
+  const hiddenInput = document.getElementById('exp-category');
+  const dropdown = document.getElementById('cat-search-dropdown');
+  if (!searchInput) return;
+  searchInput.value = '';
+  if (hiddenInput) hiddenInput.value = '';
+  if (dropdown) { dropdown.innerHTML = ''; dropdown.classList.add('hidden'); }
+  updateCatIcon('');
+}
+
+function setCategoryValue(cat) {
+  const searchInput = document.getElementById('exp-cat-search');
+  const hiddenInput = document.getElementById('exp-category');
+  if (hiddenInput) hiddenInput.value = cat;
+  if (searchInput) searchInput.value = cat;
+  updateCatIcon(cat);
+}
+
+function updateCatIcon(cat) {
+  const iconEl = document.getElementById('exp-cat-icon');
+  if (!iconEl) return;
+  const meta = cat ? getCatMeta(cat) : null;
+  iconEl.textContent = meta?.icon || 'category';
+  iconEl.style.color = meta?.color || '';
+}
+
+function renderCatDropdown(query) {
+  const dropdown = document.getElementById('cat-search-dropdown');
+  if (!dropdown) return;
+  const sorted = [...appData.categories].sort((a, b) => a.localeCompare(b));
+  const filtered = query ? sorted.filter(c => c.toLowerCase().includes(query.toLowerCase())) : sorted;
+  if (!filtered.length) {
+    dropdown.innerHTML = '<div class="cat-search-no-results">No categories found</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(cat => {
+      const meta = getCatMeta(cat);
+      const icon = meta?.icon || 'category';
+      const color = meta?.color || '#64748B';
+      return `<button type="button" class="cat-search-option" data-cat="${escapeHtml(cat)}">
+        <span class="material-symbols-rounded" style="color:${color};font-size:18px">${icon}</span>
+        <span>${escapeHtml(cat)}</span>
+      </button>`;
+    }).join('');
+    dropdown.querySelectorAll('.cat-search-option').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        setCategoryValue(btn.dataset.cat);
+        dropdown.classList.add('hidden');
+        checkDuplicatesInline();
+      });
+    });
+  }
+  dropdown.classList.remove('hidden');
 }
 
 function handleExpenseFormSubmit(e) {
@@ -816,9 +865,8 @@ function setupEventListeners() {
   if (expNameInput) {
     expNameInput.addEventListener('input', () => {
       const guess = guessCategory(expNameInput.value);
-      if (guess) {
-        const catSel = document.getElementById('exp-category');
-        if (catSel && appData.categories.includes(guess)) catSel.value = guess;
+      if (guess && appData.categories.includes(guess)) {
+        setCategoryValue(guess);
       }
       checkDuplicatesInline();
     });
@@ -834,8 +882,33 @@ function setupEventListeners() {
     checkDuplicatesInline();
   });
 
-  const expCategoryInput = document.getElementById('exp-category');
-  if (expCategoryInput) expCategoryInput.addEventListener('change', checkDuplicatesInline);
+  const expCatSearch = document.getElementById('exp-cat-search');
+  const catDropdown = document.getElementById('cat-search-dropdown');
+  if (expCatSearch) {
+    expCatSearch.addEventListener('focus', () => renderCatDropdown(expCatSearch.value));
+    expCatSearch.addEventListener('input', () => {
+      renderCatDropdown(expCatSearch.value);
+      if (!expCatSearch.value) {
+        const h = document.getElementById('exp-category');
+        if (h) h.value = '';
+        updateCatIcon('');
+      }
+    });
+    expCatSearch.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (catDropdown) catDropdown.classList.add('hidden');
+        const hiddenVal = document.getElementById('exp-category')?.value || '';
+        expCatSearch.value = hiddenVal;
+        updateCatIcon(hiddenVal);
+      }, 150);
+    });
+    expCatSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && catDropdown) {
+        catDropdown.classList.add('hidden');
+        expCatSearch.blur();
+      }
+    });
+  }
 
   const expDateInput = document.getElementById('exp-date');
   if (expDateInput) expDateInput.addEventListener('change', checkDuplicatesInline);
@@ -957,6 +1030,64 @@ function setupEventListeners() {
     importBackup(e.target.files[0]);
     e.target.value = '';
   });
+
+  // ── "Where Did It Go?" search view ──────────────────────
+  const wdigSearchInput = document.getElementById('wdig-search-input');
+  const wdigClearSearch = document.getElementById('wdig-clear-search');
+  if (wdigSearchInput) {
+    wdigSearchInput.addEventListener('input', () => {
+      wdigQuery = wdigSearchInput.value;
+      if (wdigClearSearch) wdigClearSearch.style.display = wdigQuery ? 'flex' : 'none';
+      renderSearchView();
+    });
+  }
+  if (wdigClearSearch) {
+    wdigClearSearch.addEventListener('click', () => {
+      wdigQuery = '';
+      if (wdigSearchInput) { wdigSearchInput.value = ''; wdigSearchInput.focus(); }
+      wdigClearSearch.style.display = 'none';
+      renderSearchView();
+    });
+  }
+
+  document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      wdigPreset = tab.dataset.wdigPreset;
+      const presetSel = document.getElementById('wdig-preset-select');
+      if (presetSel) presetSel.value = wdigPreset;
+      renderSearchView();
+    });
+  });
+
+  const wdigPresetSelect = document.getElementById('wdig-preset-select');
+  if (wdigPresetSelect) {
+    wdigPresetSelect.addEventListener('change', () => {
+      wdigPreset = wdigPresetSelect.value;
+      document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(t => {
+        const isActive = t.dataset.wdigPreset === wdigPreset;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      renderSearchView();
+    });
+  }
+
+  const wdigApplyBtn = document.getElementById('wdig-apply-btn');
+  if (wdigApplyBtn) {
+    wdigApplyBtn.addEventListener('click', () => {
+      wdigDateFrom = document.getElementById('wdig-date-from').value || null;
+      wdigDateTo = document.getElementById('wdig-date-to').value || null;
+      renderSearchView();
+    });
+  }
+
+  const wdigResetCat = document.getElementById('wdig-reset-cat');
+  if (wdigResetCat) {
+    wdigResetCat.addEventListener('click', () => {
+      wdigCategory = 'all';
+      renderSearchView();
+    });
+  }
 
   // ── Logout ──────────────────────────────────────────────
   const logoutBtn = document.getElementById('logout-btn');

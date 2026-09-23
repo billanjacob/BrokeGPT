@@ -1745,6 +1745,210 @@ function renderFuel() {
   }
 }
 
+/* ============================================================
+   RENDER — WHERE DID IT GO? (cross-month search)
+   ============================================================ */
+
+function renderSearchView() {
+  // Sync preset tabs
+  document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(t => {
+    const isActive = t.dataset.wdigPreset === wdigPreset;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  // Sync desktop select
+  const presetSel = document.getElementById('wdig-preset-select');
+  if (presetSel) presetSel.value = wdigPreset;
+
+  // Show/hide custom range bar
+  const rangeBar = document.getElementById('wdig-range-bar');
+  if (rangeBar) rangeBar.style.display = wdigPreset === 'custom' ? 'flex' : 'none';
+
+  // Compute effective date range from preset
+  const today = getTodayStr();
+  const now = new Date();
+  let effectiveFrom = null;
+  let effectiveTo = null;
+
+  if (wdigPreset === '7d') {
+    const d = new Date(now); d.setDate(d.getDate() - 6);
+    effectiveFrom = d.toISOString().slice(0, 10);
+    effectiveTo = today;
+  } else if (wdigPreset === '30d') {
+    const d = new Date(now); d.setDate(d.getDate() - 29);
+    effectiveFrom = d.toISOString().slice(0, 10);
+    effectiveTo = today;
+  } else if (wdigPreset === '3m') {
+    const d = new Date(now); d.setMonth(d.getMonth() - 3);
+    effectiveFrom = d.toISOString().slice(0, 10);
+    effectiveTo = today;
+  } else if (wdigPreset === 'year') {
+    effectiveFrom = `${now.getFullYear()}-01-01`;
+    effectiveTo = today;
+  } else if (wdigPreset === 'custom') {
+    effectiveFrom = wdigDateFrom;
+    effectiveTo = wdigDateTo;
+  }
+
+  // Gather all expenses across all months
+  let expenses = Object.values(appData.months).flatMap(m => m.expenses || []);
+
+  // Apply date filter
+  expenses = expenses.filter(e => {
+    if (effectiveFrom && e.date < effectiveFrom) return false;
+    if (effectiveTo && e.date > effectiveTo) return false;
+    return true;
+  });
+
+  // Apply category filter
+  if (wdigCategory !== 'all') {
+    expenses = expenses.filter(e => e.category === wdigCategory);
+  }
+
+  // Apply text search
+  if (wdigQuery) {
+    const q = wdigQuery.toLowerCase();
+    expenses = expenses.filter(e =>
+      e.name.toLowerCase().includes(q) ||
+      e.category.toLowerCase().includes(q) ||
+      String(e.amount).includes(q)
+    );
+  }
+
+  // Sort newest first
+  expenses.sort((a, b) => b.date.localeCompare(a.date) || (b.timestamp || 0) - (a.timestamp || 0));
+
+  // Render category filter
+  renderWdigCategoryFilter();
+
+  // Update results bar
+  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const countEl = document.getElementById('wdig-results-count');
+  const totalEl = document.getElementById('wdig-results-total');
+  if (countEl) countEl.textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+  if (totalEl) totalEl.textContent = `Total: ${formatFullAmount(total)}`;
+
+  const container = document.getElementById('wdig-container');
+  const emptyEl = document.getElementById('wdig-empty');
+
+  if (expenses.length === 0) {
+    if (container) container.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Group by month for cross-month clarity
+  const monthMap = new Map();
+  for (const e of expenses) {
+    const mId = e.date.slice(0, 7);
+    if (!monthMap.has(mId)) monthMap.set(mId, []);
+    monthMap.get(mId).push(e);
+  }
+  const monthGroups = [...monthMap.entries()].sort(([a], [b]) => b.localeCompare(a));
+
+  if (container) {
+    container.className = 'expenses-grouped';
+    container.innerHTML = monthGroups.map(([mId, exps]) => {
+      const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
+      const dateGroups = groupExpensesByDate(exps, 'desc');
+      const dateGroupsHtml = dateGroups.map(({ date, expenses: dExps }) => {
+        const dayTotal = dExps.reduce((s, e) => s + e.amount, 0);
+        return `
+          <div class="expense-group wdig-day-group">
+            <div class="expense-group-header wdig-day-header">
+              <span class="expense-group-date">${buildDateLabel(date)}</span>
+              <span class="expense-group-total">${formatCurrency(dayTotal)}</span>
+            </div>
+            <div class="expense-group-items">
+              ${dExps.map(e => buildExpenseItemHtml(e, false)).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="wdig-month-block">
+          <div class="wdig-month-header">
+            <span class="wdig-month-name">${formatMonthName(mId)}</span>
+            <span class="wdig-month-total">${formatFullAmount(monthTotal)}</span>
+          </div>
+          ${dateGroupsHtml}
+        </div>`;
+    }).join('');
+    attachSearchViewExpenseEvents(container);
+  }
+}
+
+function renderWdigCategoryFilter() {
+  const dropdown = document.getElementById('wdig-cat-dropdown');
+  const menu = document.getElementById('wdig-cat-menu');
+  const btn = document.getElementById('wdig-cat-btn');
+  const btnLabel = document.getElementById('wdig-cat-btn-label');
+  const btnIcon = document.getElementById('wdig-cat-btn-icon');
+  if (!menu || !dropdown || !btn) return;
+
+  const cats = ['all', ...[...appData.categories].sort((a, b) => a.localeCompare(b))];
+
+  if (btnLabel) btnLabel.textContent = wdigCategory === 'all' ? 'All Categories' : wdigCategory;
+  if (btnIcon) {
+    const activeMeta = wdigCategory === 'all' ? null : getCatMeta(wdigCategory);
+    btnIcon.textContent = wdigCategory === 'all' ? 'apps' : (activeMeta?.icon || 'category');
+    btnIcon.style.color = wdigCategory === 'all' ? '' : (activeMeta?.color || '');
+  }
+
+  menu.innerHTML = cats.map(cat => {
+    const meta = cat === 'all' ? null : getCatMeta(cat);
+    const icon = cat === 'all' ? 'apps' : (meta?.icon || 'category');
+    const isActive = wdigCategory === cat;
+    return `<button class="cat-filter-option${isActive ? ' active' : ''}" data-cat="${escapeHtml(cat)}">
+      <span class="material-symbols-rounded">${icon}</span>
+      ${cat === 'all' ? 'All Categories' : escapeHtml(cat)}
+    </button>`;
+  }).join('');
+
+  menu.querySelectorAll('.cat-filter-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      wdigCategory = opt.dataset.cat;
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      renderSearchView();
+    });
+  });
+
+  if (!dropdown._wdigListenerAttached) {
+    dropdown._wdigListenerAttached = true;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+    });
+    document.addEventListener('click', () => {
+      dropdown.classList.remove('open');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+}
+
+function attachSearchViewExpenseEvents(container) {
+  container.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      // Find which month this expense belongs to so the modal context is correct
+      for (const [mId, month] of Object.entries(appData.months)) {
+        if ((month.expenses || []).some(ex => ex.id === id)) {
+          currentMonthId = mId;
+          break;
+        }
+      }
+      if (action === 'edit') openEditExpenseModal(id);
+      if (action === 'delete') openDeleteExpenseModal(id);
+    });
+  });
+}
+
 function deleteCategory(name) {
   if (DEFAULT_CATEGORIES.includes(name)) {
     showToast('Default categories cannot be deleted.', 'warning'); return;

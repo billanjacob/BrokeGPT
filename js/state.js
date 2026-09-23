@@ -26,3 +26,10 @@ let cloudAvailable = false;
 let budgetTimeFilter = 'month'; // 'month' | 'last-month' | 'range' | 'all'
 let budgetRangeFrom = '';
 let budgetRangeTo = '';
+
+// "Where Did It Go?" search view state
+let wdigPreset = 'all'; // '7d' | '30d' | '3m' | 'year' | 'all' | 'custom'
+let wdigDateFrom = null;
+let wdigDateTo = null;
+let wdigCategory = 'all';
+let wdigQuery = '';
