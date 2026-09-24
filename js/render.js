@@ -1861,28 +1861,15 @@ function renderSearchView() {
       container.className = 'expenses-grouped';
       container.innerHTML = monthGroups.map(([mId, exps]) => {
         const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
-        const dateGroups = groupExpensesByDate(exps, 'desc');
-        const dateGroupsHtml = dateGroups.map(({ date, expenses: dExps }) => {
-          const dayTotal = dExps.reduce((s, e) => s + e.amount, 0);
-          return `
-            <div class="expense-group wdig-day-group">
-              <div class="expense-group-header wdig-day-header">
-                <span class="expense-group-date">${buildDateLabel(date)}</span>
-                <span class="expense-group-total">${formatCurrency(dayTotal)}</span>
-              </div>
-              <div class="expense-group-items">
-                ${dExps.map(e => buildExpenseItemHtml(e, false)).join('')}
-              </div>
-            </div>`;
-        }).join('');
-
         return `
           <div class="wdig-month-block">
             <div class="wdig-month-header">
               <span class="wdig-month-name">${formatMonthName(mId)}</span>
               <span class="wdig-month-total">${formatFullAmount(monthTotal)}</span>
             </div>
-            ${dateGroupsHtml}
+            <div class="expense-group-items">
+              ${exps.map(e => buildExpenseItemHtml(e, false)).join('')}
+            </div>
           </div>`;
       }).join('');
       attachSearchViewExpenseEvents(container);
