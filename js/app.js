@@ -996,6 +996,14 @@ function setupEventListeners() {
     });
   }
 
+  const wdigViewToggle = document.getElementById('wdig-view-toggle');
+  if (wdigViewToggle) {
+    wdigViewToggle.addEventListener('click', () => {
+      wdigViewMode = wdigViewMode === 'detail' ? 'monthly' : 'detail';
+      renderSearchView();
+    });
+  }
+
   const wdigApplyBtn = document.getElementById('wdig-apply-btn');
   if (wdigApplyBtn) {
     wdigApplyBtn.addEventListener('click', () => {

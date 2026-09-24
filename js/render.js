@@ -1820,6 +1820,10 @@ function renderSearchView() {
   if (countEl) countEl.textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
   if (totalEl) totalEl.textContent = `Total: ${formatFullAmount(total)}`;
 
+  // Sync toggle button icon
+  const viewIcon = document.getElementById('wdig-view-icon');
+  if (viewIcon) viewIcon.textContent = wdigViewMode === 'monthly' ? 'view_list' : 'calendar_month';
+
   const container = document.getElementById('wdig-container');
   const emptyEl = document.getElementById('wdig-empty');
 
@@ -1830,7 +1834,7 @@ function renderSearchView() {
   }
   if (emptyEl) emptyEl.style.display = 'none';
 
-  // Group by month for cross-month clarity
+  // Group by month
   const monthMap = new Map();
   for (const e of expenses) {
     const mId = e.date.slice(0, 7);
@@ -1840,34 +1844,49 @@ function renderSearchView() {
   const monthGroups = [...monthMap.entries()].sort(([a], [b]) => b.localeCompare(a));
 
   if (container) {
-    container.className = 'expenses-grouped';
-    container.innerHTML = monthGroups.map(([mId, exps]) => {
-      const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
-      const dateGroups = groupExpensesByDate(exps, 'desc');
-      const dateGroupsHtml = dateGroups.map(({ date, expenses: dExps }) => {
-        const dayTotal = dExps.reduce((s, e) => s + e.amount, 0);
+    if (wdigViewMode === 'monthly') {
+      container.className = 'wdig-monthly-summary';
+      container.innerHTML = monthGroups.map(([mId, exps]) => {
+        const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
         return `
-          <div class="expense-group wdig-day-group">
-            <div class="expense-group-header wdig-day-header">
-              <span class="expense-group-date">${buildDateLabel(date)}</span>
-              <span class="expense-group-total">${formatCurrency(dayTotal)}</span>
+          <div class="wdig-summary-row">
+            <div class="wdig-summary-left">
+              <span class="wdig-summary-month">${formatMonthName(mId)}</span>
+              <span class="wdig-summary-count">${exps.length} expense${exps.length !== 1 ? 's' : ''}</span>
             </div>
-            <div class="expense-group-items">
-              ${dExps.map(e => buildExpenseItemHtml(e, false)).join('')}
-            </div>
+            <span class="wdig-summary-total">${formatFullAmount(monthTotal)}</span>
           </div>`;
       }).join('');
+    } else {
+      container.className = 'expenses-grouped';
+      container.innerHTML = monthGroups.map(([mId, exps]) => {
+        const monthTotal = exps.reduce((s, e) => s + e.amount, 0);
+        const dateGroups = groupExpensesByDate(exps, 'desc');
+        const dateGroupsHtml = dateGroups.map(({ date, expenses: dExps }) => {
+          const dayTotal = dExps.reduce((s, e) => s + e.amount, 0);
+          return `
+            <div class="expense-group wdig-day-group">
+              <div class="expense-group-header wdig-day-header">
+                <span class="expense-group-date">${buildDateLabel(date)}</span>
+                <span class="expense-group-total">${formatCurrency(dayTotal)}</span>
+              </div>
+              <div class="expense-group-items">
+                ${dExps.map(e => buildExpenseItemHtml(e, false)).join('')}
+              </div>
+            </div>`;
+        }).join('');
 
-      return `
-        <div class="wdig-month-block">
-          <div class="wdig-month-header">
-            <span class="wdig-month-name">${formatMonthName(mId)}</span>
-            <span class="wdig-month-total">${formatFullAmount(monthTotal)}</span>
-          </div>
-          ${dateGroupsHtml}
-        </div>`;
-    }).join('');
-    attachSearchViewExpenseEvents(container);
+        return `
+          <div class="wdig-month-block">
+            <div class="wdig-month-header">
+              <span class="wdig-month-name">${formatMonthName(mId)}</span>
+              <span class="wdig-month-total">${formatFullAmount(monthTotal)}</span>
+            </div>
+            ${dateGroupsHtml}
+          </div>`;
+      }).join('');
+      attachSearchViewExpenseEvents(container);
+    }
   }
 }
 

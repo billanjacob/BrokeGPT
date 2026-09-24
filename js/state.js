@@ -30,3 +30,4 @@ let wdigDateFrom = null;
 let wdigDateTo = null;
 let wdigCategory = 'all';
 let wdigQuery = '';
+let wdigViewMode = 'detail'; // 'detail' | 'monthly'
