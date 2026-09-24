@@ -31,3 +31,4 @@ let wdigDateTo = null;
 let wdigCategory = 'all';
 let wdigQuery = '';
 let wdigViewMode = 'detail'; // 'detail' | 'monthly'
+let wdigSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first

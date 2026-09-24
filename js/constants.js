@@ -8,7 +8,7 @@ const APP_VERSION = '1.0.0';
 const DEFAULT_CATEGORIES = [
   'Restaurant', 'Bakery', 'Fuel', 'Fashion', 'Bills', 'Entertainment',
   'Medical', 'Travel', 'EMI', 'Investment', 'Donation', 'Gifts', 'Other',
-  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets', 'Canteen',
+  'Stationary', 'Internet', 'Saloon', 'Gym', 'Groceries', 'Gadgets', 'Canteen', 'Scale Model',
 ];
 
 const CATEGORY_META = {
@@ -32,6 +32,7 @@ const CATEGORY_META = {
   Groceries: { icon: 'local_grocery_store', color: '#16A34A' },
   Gadgets: { icon: 'devices', color: '#6366F1' },
   Canteen: { icon: 'lunch_dining', color: '#F59E0B' },
+  'Scale Model': { icon: 'precision_manufacturing', color: '#0891B2' },
 };
 
 const NAME_CATEGORY_RULES = [
@@ -44,13 +45,14 @@ const NAME_CATEGORY_RULES = [
   { keywords: ['electricity', 'water bill', 'bescom', 'tneb', 'mseb', 'tata sky', 'd2h', 'dish tv', 'maintenance'], category: 'Bills' },
   { keywords: ['netflix', 'hotstar', 'prime video', 'youtube premium', 'movie', 'cinema', 'pvr', 'inox', 'theatre', 'concert', 'gaming', 'steam', 'playstation', 'xbox', 'bookmyshow'], category: 'Entertainment' },
   { keywords: ['spotify', 'Spotify',], category: 'Spotify' },
-  { keywords: ['unknown', 'Unkown',], category: 'Other' },
+  { keywords: ['unknown', 'Unkown', 'other',], category: 'Other' },
+  { keywords: ['scale model', 'model kit', 'tamiya', 'revell', 'gundam', 'gunpla', 'diecast', 'miniature'], category: 'Scale Model' },
   { keywords: ['hospital', 'clinic', 'pharmacy', 'medicine', 'doctor', 'apollo', 'medplus', 'blood test', 'xray', 'scan', 'medical', 'tablet', 'syrup', 'injection', 'health', 'dental', 'dentist', 'lab test', 'diagnostic'], category: 'Medical' },
   { keywords: ['uber', 'ola cab', 'metro', 'irctc', 'redbus', 'rapido', 'flight', 'indigo', 'air india', 'spicejet', 'bus ticket', 'train ticket', 'toll', 'highway', 'travel', 'cab', 'taxi', 'auto ride', 'airport', 'hotel stay'], category: 'Travel' },
   { keywords: ['emi', 'loan emi', 'home loan', 'car loan', 'personal loan', 'bajaj finance', 'hdfc loan', 'icici loan', 'axis loan', 'equitas', 'credit emi'], category: 'EMI' },
   { keywords: ['mutual fund', 'sip', 'zerodha', 'groww', 'stocks', 'shares', 'gold bond', 'fixed deposit', 'ppf', 'nps', 'elss', 'investment', 'lic premium', 'insurance premium'], category: 'Investment' },
   { keywords: ['church', 'donation', 'tithe', 'offering', 'charity', 'contribution'], category: 'Donation' },
-  { keywords: ['gift', 'birthday', 'anniversary', 'wedding', 'present for'], category: 'Gifts' },
+  { keywords: ['gift', 'birthday', 'anniversary', 'wedding', 'present for', 'pocket money'], category: 'Gifts' },
   { keywords: ['grocery', 'groceries', 'supermarket', 'dmart', 'bigbasket', 'blinkit', 'zepto', 'jiomart', 'more supermarket', 'reliance fresh', 'nature basket', 'vegetables', 'fruits', 'rice', 'dal', 'wheat', 'atta', 'oil', 'milk', 'eggs', 'provisions', 'traders'], category: 'Groceries' },
   { keywords: ['stationary', 'pen', 'pencil', 'notebook', 'notepad', 'paper', 'eraser', 'stapler', 'highlighter', 'marker', 'folder', 'file', 'ink', 'perfume'], category: 'Stationary' },
   { keywords: ['saloon', 'salon', 'hair', 'haircut', 'hair cut', 'barber', 'trimming', 'shaving', 'facial', 'grooming', 'waxing', 'manicure', 'pedicure', 'parlour', 'parlor'], category: 'Saloon' },

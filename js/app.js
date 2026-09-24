@@ -392,7 +392,7 @@ function handleAddAnother() {
     document.getElementById('exp-name').value = '';
     document.getElementById('exp-amount').value = '';
     document.getElementById('exp-note').value = '';
-    document.getElementById('exp-name').focus();
+    document.getElementById('exp-amount').focus();
     refreshCurrentView();
   };
 
@@ -992,6 +992,14 @@ function setupEventListeners() {
   if (wdigPresetSelect) {
     wdigPresetSelect.addEventListener('change', () => {
       wdigPreset = wdigPresetSelect.value;
+      renderSearchView();
+    });
+  }
+
+  const wdigSortBtn = document.getElementById('wdig-sort-btn');
+  if (wdigSortBtn) {
+    wdigSortBtn.addEventListener('click', () => {
+      wdigSortDir = wdigSortDir === 'desc' ? 'asc' : 'desc';
       renderSearchView();
     });
   }

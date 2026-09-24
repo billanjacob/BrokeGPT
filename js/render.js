@@ -1807,8 +1807,19 @@ function renderSearchView() {
     );
   }
 
-  // Sort newest first
-  expenses.sort((a, b) => b.date.localeCompare(a.date) || (b.timestamp || 0) - (a.timestamp || 0));
+  // Sort by date
+  expenses.sort((a, b) => {
+    const cmp = wdigSortDir === 'desc'
+      ? b.date.localeCompare(a.date) || (b.timestamp || 0) - (a.timestamp || 0)
+      : a.date.localeCompare(b.date) || (a.timestamp || 0) - (b.timestamp || 0);
+    return cmp;
+  });
+
+  // Sync sort button
+  const wdigSortBtn = document.getElementById('wdig-sort-btn');
+  const wdigSortIcon = document.getElementById('wdig-sort-icon');
+  if (wdigSortIcon) wdigSortIcon.textContent = wdigSortDir === 'desc' ? 'arrow_downward' : 'arrow_upward';
+  if (wdigSortBtn) wdigSortBtn.title = wdigSortDir === 'desc' ? 'Newest first' : 'Oldest first';
 
   // Render category filter
   renderWdigCategoryFilter();
@@ -1841,7 +1852,7 @@ function renderSearchView() {
     if (!monthMap.has(mId)) monthMap.set(mId, []);
     monthMap.get(mId).push(e);
   }
-  const monthGroups = [...monthMap.entries()].sort(([a], [b]) => b.localeCompare(a));
+  const monthGroups = [...monthMap.entries()].sort(([a], [b]) => wdigSortDir === 'desc' ? b.localeCompare(a) : a.localeCompare(b));
 
   if (container) {
     if (wdigViewMode === 'monthly') {

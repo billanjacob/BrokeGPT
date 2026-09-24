@@ -603,6 +603,9 @@
 
         <div class="view-header">
           <div>
+            <h1 class="view-title">Budget Planner</h1>
+            <p class="card-subtitle-text" id="budget-view-subtitle">Allocate your monthly salary across categories</p>
+          </div>
           <div class="budget-header-actions">
             <button class="btn btn-ghost" id="budget-reset-btn">
               <span class="material-symbols-rounded" aria-hidden="true">restart_alt</span>
@@ -907,7 +910,7 @@
               of Claude AI. Powered by Supabase and chronic financial anxiety. No frameworks were harmed in the making
               of this app, but several savings goals were.</p>
             <div class="about-version">Version 1.0.0 · MIT License</div>
-            <div class="about-version" id="about-last-update">Last Updated: 2026-09-24 · U87</div>
+            <div class="about-version" id="about-last-update">Last Updated: 2026-09-24 · U94</div>
           </div>
 
         </div>
@@ -970,6 +973,9 @@
         <div class="results-bar">
           <span class="results-count" id="wdig-results-count">0 expenses</span>
           <span class="results-total" id="wdig-results-total">Total: ₹0</span>
+          <button class="icon-btn" id="wdig-sort-btn" aria-label="Sort by date" title="Newest first">
+            <span class="material-symbols-rounded" id="wdig-sort-icon">arrow_downward</span>
+          </button>
           <button class="icon-btn" id="wdig-view-toggle" aria-label="Toggle monthly summary" title="Monthly summary">
             <span class="material-symbols-rounded" id="wdig-view-icon">calendar_month</span>
           </button>
@@ -1068,16 +1074,16 @@
       <form class="modal-form" id="expense-form" novalidate autocomplete="off">
         <div class="form-row-2">
           <div class="form-group">
-            <label class="form-label" for="exp-name">Name <span class="req" aria-hidden="true">*</span></label>
-            <input type="text" id="exp-name" class="text-input" placeholder="e.g. Dinner, Petrol" required
-              maxlength="100" />
-          </div>
-          <div class="form-group">
             <label class="form-label" for="exp-amount">Amount <span class="req" aria-hidden="true">*</span></label>
             <div class="prefixed-input-wrap">
               <span class="input-prefix" id="exp-amount-prefix" aria-hidden="true">₹</span>
               <input type="text" id="exp-amount" class="text-input" placeholder="0.00" inputmode="decimal" required />
             </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="exp-name">Name <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="exp-name" class="text-input" placeholder="e.g. Dinner, Petrol" required
+              maxlength="100" />
           </div>
         </div>
         <div class="form-row-2">
