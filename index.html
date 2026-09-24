@@ -907,7 +907,7 @@
               of Claude AI. Powered by Supabase and chronic financial anxiety. No frameworks were harmed in the making
               of this app, but several savings goals were.</p>
             <div class="about-version">Version 1.0.0 · MIT License</div>
-            <div class="about-version" id="about-last-update">Last Updated: 2026-09-24 · U81</div>
+            <div class="about-version" id="about-last-update">Last Updated: 2026-09-24 · U82</div>
           </div>
 
         </div>
@@ -926,9 +926,9 @@
         </div>
 
         <!-- Filter Bar -->
-        <div class="filters-bar">
+        <div class="wdig-filter-bar">
 
-          <!-- Col 1: Search -->
+          <!-- Search -->
           <div class="search-wrap" role="search">
             <span class="material-symbols-rounded search-icon" aria-hidden="true">search</span>
             <input type="text" id="wdig-search-input" class="search-input" placeholder="Search by name, category, or amount…" autocomplete="off" aria-label="Search expenses" />
@@ -937,33 +937,17 @@
             </button>
           </div>
 
-          <!-- Col 2: Date range presets -->
-          <div class="period-filter-wrap">
-            <div class="filter-row" role="group" aria-label="Date range">
-              <div class="filter-tabs">
-                <button class="filter-tab" data-wdig-preset="7d" role="tab" aria-selected="false">7 Days</button>
-                <button class="filter-tab" data-wdig-preset="30d" role="tab" aria-selected="false">30 Days</button>
-                <button class="filter-tab" data-wdig-preset="3m" role="tab" aria-selected="false">3 Months</button>
-                <button class="filter-tab" data-wdig-preset="year" role="tab" aria-selected="false">This Year</button>
-                <button class="filter-tab active" data-wdig-preset="all" role="tab" aria-selected="true">All Time</button>
-                <button class="filter-tab" data-wdig-preset="custom" role="tab" aria-selected="false">Custom</button>
-              </div>
-            </div>
-            <div class="period-select-wrap">
-              <select id="wdig-preset-select" class="select-input period-filter-select" aria-label="Date range preset">
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="3m">Last 3 Months</option>
-                <option value="year">This Year</option>
-                <option value="all" selected>All Time</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Col 3: Category filter -->
-          <div class="cat-chips-wrap">
-            <div class="cat-filter-row">
+          <!-- Date + Category dropdowns row -->
+          <div class="wdig-dropdowns-row">
+            <select id="wdig-preset-select" class="select-input" aria-label="Date range preset">
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="3m">Last 3 Months</option>
+              <option value="year">This Year</option>
+              <option value="all" selected>All Time</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <div class="wdig-cat-wrap">
               <div class="cat-filter-dropdown" id="wdig-cat-dropdown">
                 <button class="cat-filter-btn" id="wdig-cat-btn" aria-haspopup="listbox" aria-expanded="false">
                   <span class="material-symbols-rounded cat-filter-btn-icon" id="wdig-cat-btn-icon">apps</span>

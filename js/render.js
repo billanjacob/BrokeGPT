@@ -1748,14 +1748,7 @@ function renderFuel() {
    ============================================================ */
 
 function renderSearchView() {
-  // Sync preset tabs
-  document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(t => {
-    const isActive = t.dataset.wdigPreset === wdigPreset;
-    t.classList.toggle('active', isActive);
-    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-
-  // Sync desktop select
+  // Sync date preset select
   const presetSel = document.getElementById('wdig-preset-select');
   if (presetSel) presetSel.value = wdigPreset;
 

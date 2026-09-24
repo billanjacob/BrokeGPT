@@ -988,24 +988,10 @@ function setupEventListeners() {
     });
   }
 
-  document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(tab => {
-    tab.addEventListener('click', () => {
-      wdigPreset = tab.dataset.wdigPreset;
-      const presetSel = document.getElementById('wdig-preset-select');
-      if (presetSel) presetSel.value = wdigPreset;
-      renderSearchView();
-    });
-  });
-
   const wdigPresetSelect = document.getElementById('wdig-preset-select');
   if (wdigPresetSelect) {
     wdigPresetSelect.addEventListener('change', () => {
       wdigPreset = wdigPresetSelect.value;
-      document.querySelectorAll('#view-search .filter-tab[data-wdig-preset]').forEach(t => {
-        const isActive = t.dataset.wdigPreset === wdigPreset;
-        t.classList.toggle('active', isActive);
-        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      });
       renderSearchView();
     });
   }
