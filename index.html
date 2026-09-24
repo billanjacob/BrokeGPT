@@ -90,6 +90,10 @@
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">receipt_long</span>
         <span class="nav-label">Expenses</span>
       </a>
+      <a href="#" class="nav-item" data-view="search" role="button">
+        <span class="material-symbols-rounded nav-icon" aria-hidden="true">manage_search</span>
+        <span class="nav-label">Where Did It Go?</span>
+      </a>
       <a href="#" class="nav-item" data-view="analytics" role="button">
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">bar_chart</span>
         <span class="nav-label">Analytics</span>
@@ -105,10 +109,6 @@
       <a href="#" class="nav-item" data-view="history" role="button">
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">history</span>
         <span class="nav-label">History</span>
-      </a>
-      <a href="#" class="nav-item" data-view="search" role="button">
-        <span class="material-symbols-rounded nav-icon" aria-hidden="true">manage_search</span>
-        <span class="nav-label">Where Did It Go?</span>
       </a>
       <a href="#" class="nav-item" data-view="fuel" role="button">
         <span class="material-symbols-rounded nav-icon" aria-hidden="true">local_gas_station</span>
@@ -174,15 +174,6 @@
          ================================================ -->
       <section class="view active" id="view-dashboard" aria-label="Dashboard">
 
-        <!-- View Header -->
-        <div class="view-header">
-          <p class="greeting view-title" id="greeting">Good morning</p>
-          <button class="btn btn-primary" id="set-salary-btn">
-            <span class="material-symbols-rounded" aria-hidden="true">payments</span>
-            <span id="set-salary-btn-label">Set Income</span>
-          </button>
-        </div>
-
         <!-- Stats Grid -->
         <div class="stats-grid" role="list" aria-label="Financial overview">
 
@@ -217,6 +208,9 @@
               <div class="stat-value" id="stat-salary">₹0</div>
               <div class="stat-sub" id="stat-salary-sub">—</div>
             </div>
+            <button class="icon-btn" id="set-salary-btn" title="Set Income" aria-label="Set Income" style="margin-left:auto">
+              <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+            </button>
           </div>
 
           <div class="stat-card" role="listitem">
@@ -325,14 +319,6 @@
          ================================================ -->
       <section class="view" id="view-expenses" aria-label="Expenses">
 
-        <div class="view-header">
-          <h1 class="view-title">Expenses</h1>
-          <button class="btn btn-primary" id="add-expense-btn" aria-label="Add new expense (Ctrl+N)">
-            <span class="material-symbols-rounded" aria-hidden="true">add</span>
-            Add Expense
-          </button>
-        </div>
-
         <!-- Filter Bar (desktop: 3-col grid; mobile: stacked rows) -->
         <div class="filters-bar">
 
@@ -346,39 +332,7 @@
             </button>
           </div>
 
-          <!-- Col 2: Period / Date-range filter -->
-          <div class="period-filter-wrap">
-            <!-- Mobile: tab buttons -->
-            <div class="filter-row" role="group" aria-label="Time period filter">
-              <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="month" role="tab" aria-selected="true">This
-                  Month</button>
-                <button class="filter-tab" data-filter="week" role="tab" aria-selected="false">This Week</button>
-                <button class="filter-tab" data-filter="today" role="tab" aria-selected="false">Today</button>
-                <button class="filter-tab" data-filter="custom" role="tab" aria-selected="false">Custom</button>
-                <button class="filter-tab" data-filter="all" role="tab" aria-selected="false">All</button>
-              </div>
-              <button class="filter-reset-btn" id="reset-period-filter" title="Reset to This Month" aria-label="Reset period filter">
-                <span class="material-symbols-rounded">restart_alt</span>
-              </button>
-            </div>
-            <!-- Desktop: styled select dropdown with reset -->
-            <div class="period-select-wrap">
-              <select id="period-filter-select" class="select-input period-filter-select"
-                aria-label="Filter by time period">
-                <option value="month">This Month</option>
-                <option value="week">This Week</option>
-                <option value="today">Today</option>
-                <option value="custom">Custom Range</option>
-                <option value="all">All Time</option>
-              </select>
-              <button class="filter-reset-btn" id="reset-period-filter-desktop" title="Reset to This Month" aria-label="Reset period filter">
-                <span class="material-symbols-rounded">restart_alt</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Col 3: Category filter -->
+          <!-- Col 2: Category filter -->
           <div class="cat-chips-wrap">
             <div class="cat-chips-label">
               <span class="material-symbols-rounded">filter_list</span>
@@ -411,19 +365,14 @@
 
         </div>
 
-        <!-- Custom Date Range (full-width row, shown below filter bar when Custom selected) -->
-        <div class="custom-range-bar" id="custom-range-bar" style="display:none">
-          <input type="date" id="date-from" class="date-input" aria-label="From date" />
-          <span class="range-sep">to</span>
-          <input type="date" id="date-to" class="date-input" aria-label="To date" />
-          <button class="btn btn-sm btn-primary" id="apply-range-btn">Apply</button>
-        </div>
-
         <!-- Result Stats -->
         <div class="results-bar">
           <span class="results-count" id="results-count">0 expenses</span>
           <span class="results-total" id="results-total">Total: ₹0</span>
           <div class="results-bar-actions">
+            <button class="icon-btn" id="add-expense-btn" aria-label="Add new expense (Ctrl+N)" title="Add Expense">
+              <span class="material-symbols-rounded" aria-hidden="true">add</span>
+            </button>
             <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Newest first">
               <span class="material-symbols-rounded" id="sort-date-icon">arrow_downward</span>
             </button>
@@ -455,7 +404,6 @@
       <section class="view" id="view-analytics" aria-label="Analytics">
 
         <div class="view-header">
-          <h1 class="view-title">Analytics</h1>
           <div class="analytics-month-wrap">
             <select class="select-input" id="analytics-month-select" aria-label="Select month"></select>
             <button class="filter-reset-btn" id="reset-analytics-month" title="Reset to current month" aria-label="Reset analytics month">
@@ -543,7 +491,6 @@
       <section class="view" id="view-trends" aria-label="Category Trends">
 
         <div class="view-header">
-          <h1 class="view-title">Trends</h1>
           <button class="icon-btn" id="trends-table-toggle" aria-label="Toggle category label display"
             title="Toggle icon/text">
             <span class="material-symbols-rounded" id="trends-table-toggle-icon">text_fields</span>
@@ -638,9 +585,6 @@
          ================================================ -->
       <section class="view" id="view-history" aria-label="Monthly history">
 
-        <div class="view-header">
-          <h1 class="view-title">Monthly History</h1>
-        </div>
 
         <div id="history-grid" class="history-grid" aria-label="All months"></div>
 
@@ -659,9 +603,6 @@
 
         <div class="view-header">
           <div>
-            <h1 class="view-title">Budget Planner</h1>
-            <p class="card-subtitle" id="budget-view-subtitle">Allocate your monthly salary across categories</p>
-          </div>
           <div class="budget-header-actions">
             <button class="btn btn-ghost" id="budget-reset-btn">
               <span class="material-symbols-rounded" aria-hidden="true">restart_alt</span>
@@ -761,9 +702,6 @@
          ================================================ -->
       <section class="view" id="view-settings" aria-label="Settings">
 
-        <div class="view-header">
-          <h1 class="view-title">Settings</h1>
-        </div>
 
         <div class="settings-layout">
 
@@ -969,7 +907,7 @@
               of Claude AI. Powered by Supabase and chronic financial anxiety. No frameworks were harmed in the making
               of this app, but several savings goals were.</p>
             <div class="about-version">Version 1.0.0 · MIT License</div>
-            <div class="about-version" id="about-last-update">Last Updated: 2026-09-22 · U76</div>
+            <div class="about-version" id="about-last-update">Last Updated: 2026-09-24 · U81</div>
           </div>
 
         </div>
@@ -983,7 +921,6 @@
 
         <div class="view-header">
           <div>
-            <h1 class="view-title">Where Did It Go?</h1>
             <p class="card-subtitle">Search expenses across all months</p>
           </div>
         </div>
@@ -1075,7 +1012,6 @@
       <section class="view" id="view-fuel" aria-label="Baleno Fuel Expenses">
 
         <div class="view-header">
-          <h1 class="view-title">Fuel</h1>
           <div class="view-header-actions">
             <button class="icon-btn" id="fuel-view-toggle" aria-label="Toggle monthly view" title="Toggle monthly view">
               <span class="material-symbols-rounded" id="fuel-view-icon">calendar_month</span>

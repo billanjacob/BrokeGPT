@@ -726,40 +726,6 @@ function setupEventListeners() {
     });
   }
 
-  // ── Filter tabs (expenses) ───────────────────────────────
-  document.querySelectorAll('#view-expenses .filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      activeTimeFilter = tab.dataset.filter;
-      const periodSel = document.getElementById('period-filter-select');
-      if (periodSel) periodSel.value = activeTimeFilter;
-      const rangeBar = document.getElementById('custom-range-bar');
-      if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
-      renderExpenses();
-    });
-  });
-
-  // ── Desktop period select dropdown (expenses) ────────────
-  const periodFilterSelect = document.getElementById('period-filter-select');
-  if (periodFilterSelect) {
-    periodFilterSelect.addEventListener('change', () => {
-      activeTimeFilter = periodFilterSelect.value;
-      document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
-        const isActive = t.dataset.filter === activeTimeFilter;
-        t.classList.toggle('active', isActive);
-        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      });
-      const rangeBar = document.getElementById('custom-range-bar');
-      if (rangeBar) rangeBar.style.display = activeTimeFilter === 'custom' ? 'flex' : 'none';
-      renderExpenses();
-    });
-  }
-
   // ── Filter reset buttons ────────────────────────────────
   function resetAllExpenseFilters() {
     // Search
@@ -768,24 +734,6 @@ function setupEventListeners() {
     const clearSearch = document.getElementById('clear-search');
     if (searchInput) searchInput.value = '';
     if (clearSearch) clearSearch.style.display = 'none';
-
-    // Period
-    activeTimeFilter = 'month';
-    customRangeFrom = null;
-    customRangeTo = null;
-    document.querySelectorAll('#view-expenses .filter-tab').forEach(t => {
-      const active = t.dataset.filter === 'month';
-      t.classList.toggle('active', active);
-      t.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    const periodSel = document.getElementById('period-filter-select');
-    if (periodSel) periodSel.value = 'month';
-    const rangeBar = document.getElementById('custom-range-bar');
-    if (rangeBar) rangeBar.style.display = 'none';
-    const dateFrom = document.getElementById('date-from');
-    const dateTo = document.getElementById('date-to');
-    if (dateFrom) dateFrom.value = '';
-    if (dateTo) dateTo.value = '';
 
     // Category
     activeCatFilter = 'all';
@@ -816,7 +764,7 @@ function setupEventListeners() {
     renderTrends();
   }
 
-  ['reset-period-filter', 'reset-period-filter-desktop', 'reset-cat-filter', 'reset-cat-filter-dropdown'].forEach(id => {
+  ['reset-cat-filter', 'reset-cat-filter-dropdown'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.addEventListener('click', resetAllExpenseFilters);
   });
@@ -844,16 +792,6 @@ function setupEventListeners() {
       budgetRangeFrom = document.getElementById('budget-from-month').value || '';
       budgetRangeTo = document.getElementById('budget-to-month').value || '';
       renderBudgetPlanner();
-    });
-  }
-
-  // ── Custom date range ───────────────────────────────────
-  const applyRangeBtn = document.getElementById('apply-range-btn');
-  if (applyRangeBtn) {
-    applyRangeBtn.addEventListener('click', () => {
-      customRangeFrom = document.getElementById('date-from').value || null;
-      customRangeTo = document.getElementById('date-to').value || null;
-      renderExpenses();
     });
   }
 

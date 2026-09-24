@@ -236,15 +236,15 @@ function renderDashboard() {
   const cur = appData.settings.currency;
 
   // Greeting
-  document.getElementById('greeting').textContent = getGreeting();
+  const greetingEl = document.getElementById('greeting');
+  if (greetingEl) greetingEl.textContent = getGreeting();
 
   // Salary button
   const salaryBtn = document.getElementById('set-salary-btn');
-  const salaryLbl = document.getElementById('set-salary-btn-label');
-  if (month && month.salarySet && month.salary > 0) {
-    salaryLbl.textContent = 'Edit Income';
-  } else {
-    salaryLbl.textContent = 'Set Income';
+  if (salaryBtn) {
+    const label = (month && month.salarySet && month.salary > 0) ? 'Edit Income' : 'Set Income';
+    salaryBtn.title = label;
+    salaryBtn.setAttribute('aria-label', label);
   }
 
   // Stats cards
@@ -372,9 +372,7 @@ function renderDashboard() {
 
 function renderExpenses() {
   const month = appData.months[currentMonthId];
-  const allExpenses = activeTimeFilter === 'all'
-    ? Object.values(appData.months).flatMap(m => m.expenses || [])
-    : month ? [...(month.expenses || [])] : [];
+  const allExpenses = month ? [...(month.expenses || [])] : [];
 
   // Sort by date (direction controlled by expenseSortDir)
   allExpenses.sort((a, b) => {
@@ -394,7 +392,7 @@ function renderExpenses() {
   if (sortBtn) sortBtn.title = expenseSortDir === 'desc' ? 'Newest first' : 'Oldest first';
 
   const filtered = filterExpenses(
-    allExpenses, activeTimeFilter, customRangeFrom, customRangeTo, activeCatFilter, searchQuery
+    allExpenses, 'month', null, null, activeCatFilter, searchQuery
   );
 
   // Category chips

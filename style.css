@@ -1497,17 +1497,6 @@ body.sidebar-collapsed .main-content {
   box-shadow: var(--shadow-sm);
 }
 
-/* ── Period Select Dropdown (desktop, inside .filters-bar) ── */
-.period-select-wrap {
-  display: none; /* shown via desktop media query */
-  align-items: center;
-  gap: var(--space-2);
-}
-.period-filter-select {
-  flex: 1;
-  cursor: pointer;
-}
-
 /* ── Cat filter dropdown row (reset btn sibling) ── */
 .cat-filter-row {
   display: none;
@@ -1516,24 +1505,6 @@ body.sidebar-collapsed .main-content {
 }
 .cat-filter-row .cat-filter-dropdown {
   flex: 1;
-}
-
-/* ── Custom Date Range ────────────────────────────────── */
-.custom-range-bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.range-sep {
-  font-size: var(--text-sm);
-  color: var(--text-3);
 }
 
 /* ── Category Chips ───────────────────────────────────── */
@@ -3960,7 +3931,17 @@ kbd {
 
   .cat-chips-bar { gap: var(--space-2); flex-wrap: nowrap; }
 
-  .custom-range-bar { flex-wrap: wrap; }
+  /* Prevent iOS auto-zoom on input focus (requires font-size ≥ 16px) */
+  .search-input,
+  .select-input,
+  .cat-filter-btn,
+  .date-input {
+    font-size: 16px;
+  }
+
+  /* Larger touch targets for search and category filter */
+  .search-input { padding-top: 12px; padding-bottom: 12px; }
+  .cat-filter-btn { min-height: 48px; }
 
   .toast-container { bottom: var(--space-4); min-width: 90vw; max-width: 95vw; }
 }
@@ -4048,11 +4029,11 @@ kbd {
   color: var(--text-2);
 }
 
-/* ── Desktop: 3-col Filter Bar (expenses view) ───────── */
+/* ── Desktop: 2-col Filter Bar (expenses view) ───────── */
 @media (min-width: 769px) {
   .filters-bar {
     display: grid;
-    grid-template-columns: 1fr 185px 215px;
+    grid-template-columns: 1fr 215px;
     gap: var(--space-3);
     align-items: start;
     margin-bottom: var(--space-3);
@@ -4060,12 +4041,6 @@ kbd {
 
   /* Remove individual bottom margins — gap handles spacing */
   .filters-bar .search-wrap { margin-bottom: 0; }
-
-  /* Hide mobile period tabs */
-  .filters-bar .filter-row { display: none; }
-
-  /* Show period select wrapper (select + reset btn) */
-  .period-select-wrap { display: flex; }
 
   /* Cat chips wrap: strip card shell */
   .filters-bar .cat-chips-wrap {
