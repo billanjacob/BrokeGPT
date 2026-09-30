@@ -262,10 +262,11 @@ function renderDashboard() {
   if (spentRemEl) {
     if (stats.salary > 0) {
       const rem = stats.salary - stats.totalSpent;
-      spentRemEl.textContent = `${rem >= 0 ? formatFullAmount(rem) + ' remaining' : formatFullAmount(Math.abs(rem)) + ' over budget'}`;
-      spentRemEl.className = `stat-sub ${rem >= 0 ? 'success' : 'danger'}`;
+      spentRemEl.textContent = rem >= 0 ? `${formatFullAmount(rem)} remaining` : `${formatFullAmount(Math.abs(rem))} over budget`;
+      spentRemEl.className = `stat-sub spent-remaining-badge ${rem >= 0 ? 'success' : 'danger'}`;
     } else {
       spentRemEl.textContent = '';
+      spentRemEl.className = 'stat-sub spent-remaining-badge';
     }
   }
 

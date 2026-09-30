@@ -607,6 +607,23 @@ body.sidebar-collapsed .main-content {
   margin-top: var(--space-1);
 }
 
+.spent-remaining-badge {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.spent-remaining-badge.success {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+.spent-remaining-badge.danger {
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  color: var(--color-danger);
+}
+
 /* ── Progress Card ────────────────────────────────────── */
 .progress-card {
   margin-bottom: var(--space-5);
