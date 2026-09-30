@@ -738,6 +738,13 @@ function setupEventListeners() {
     // Category
     activeCatFilter = 'all';
 
+    // Unpaid filter
+    showUnpaidOnly = false;
+    const unpaidToggle = document.getElementById('unpaid-filter-toggle');
+    const unpaidLabel = document.getElementById('unpaid-filter-label');
+    if (unpaidToggle) unpaidToggle.checked = false;
+    if (unpaidLabel) { unpaidLabel.style.color = ''; unpaidLabel.style.fontWeight = ''; }
+
     renderExpenses();
   }
 
@@ -857,6 +864,17 @@ function setupEventListeners() {
 
   const expPaidToggle = document.getElementById('exp-paid');
   if (expPaidToggle) expPaidToggle.addEventListener('change', updatePaidLabel);
+
+  const unpaidFilterToggle = document.getElementById('unpaid-filter-toggle');
+  if (unpaidFilterToggle) unpaidFilterToggle.addEventListener('change', () => {
+    showUnpaidOnly = unpaidFilterToggle.checked;
+    const label = document.getElementById('unpaid-filter-label');
+    if (label) {
+      label.style.color = showUnpaidOnly ? 'var(--color-danger)' : '';
+      label.style.fontWeight = showUnpaidOnly ? '600' : '';
+    }
+    renderExpenses();
+  });
 
   const expViewToggle = document.getElementById('expense-view-toggle');
   if (expViewToggle) expViewToggle.addEventListener('click', () => {

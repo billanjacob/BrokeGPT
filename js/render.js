@@ -391,9 +391,10 @@ function renderExpenses() {
   if (sortIcon) sortIcon.textContent = expenseSortDir === 'desc' ? 'arrow_downward' : 'arrow_upward';
   if (sortBtn) sortBtn.title = expenseSortDir === 'desc' ? 'Newest first' : 'Oldest first';
 
-  const filtered = filterExpenses(
+  let filtered = filterExpenses(
     allExpenses, 'month', null, null, activeCatFilter, searchQuery
   );
+  if (showUnpaidOnly) filtered = filtered.filter(e => !e.paid);
 
   // Category chips
   renderCategoryChips();

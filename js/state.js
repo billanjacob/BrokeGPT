@@ -10,6 +10,7 @@ let activeCatFilter = 'all';
 let searchQuery = '';
 let expenseSortDir = 'desc'; // 'desc' = newest first, 'asc' = oldest first
 let expenseViewMode = localStorage.getItem('expenseViewMode') || 'list'; // 'list' | 'tile'
+let showUnpaidOnly = false;
 let fuelViewMode = localStorage.getItem('fuelViewMode') || 'fills'; // 'fills' | 'monthly'
 let trendFromMonth = '';
 let trendToMonth = '';
