@@ -1754,8 +1754,25 @@ body.sidebar-collapsed .main-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
   padding: 0 var(--space-1);
+}
+
+.results-bar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.results-bar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .results-bar-actions {
@@ -1769,7 +1786,6 @@ body.sidebar-collapsed .main-content {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-right: var(--space-2);
 }
 
 .unpaid-filter-label {
@@ -1799,27 +1815,37 @@ body.sidebar-collapsed .main-content {
   align-items: center;
   width: 32px;
   height: 18px;
-  background: var(--surface-3);
+  background: transparent;
+  border: 2px solid var(--border-2);
   border-radius: 9px;
-  transition: background var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  box-sizing: border-box;
 }
 
 .unpaid-switch input:checked ~ .unpaid-switch-track {
   background: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .unpaid-switch-thumb {
-  width: 12px;
-  height: 12px;
-  background: #fff;
+  width: 10px;
+  height: 10px;
+  background: var(--border-2);
   border-radius: 50%;
-  margin-left: 3px;
-  transition: transform var(--dur-fast) var(--ease);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  margin-left: 2px;
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
 .unpaid-switch input:checked ~ .unpaid-switch-track .unpaid-switch-thumb {
-  transform: translateX(14px);
+  transform: translateX(12px);
+  background: #fff;
+}
+
+.unpaid-switch input:focus-visible ~ .unpaid-switch-track {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .results-count {
@@ -4169,6 +4195,18 @@ kbd {
   }
   .wdig-cat-wrap {
     width: 100%;
+  }
+}
+
+/* ── Results bar: stack on very small screens ─────────── */
+@media (max-width: 400px) {
+  .results-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .results-bar-right {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

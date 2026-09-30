@@ -1047,6 +1047,14 @@ function setupEventListeners() {
     });
   }
 
+  const wdigUnpaidToggle = document.getElementById('wdig-unpaid-toggle');
+  if (wdigUnpaidToggle) {
+    wdigUnpaidToggle.addEventListener('change', () => {
+      wdigUnpaidOnly = wdigUnpaidToggle.checked;
+      renderSearchView();
+    });
+  }
+
   // ── Logout ──────────────────────────────────────────────
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) logoutBtn.addEventListener('click', () => {

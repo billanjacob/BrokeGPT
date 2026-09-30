@@ -258,6 +258,16 @@ function renderDashboard() {
 
   document.getElementById('stat-spent').textContent = formatFullAmount(stats.totalSpent);
   document.getElementById('stat-count').textContent = `${stats.count} transaction${stats.count !== 1 ? 's' : ''}`;
+  const spentRemEl = document.getElementById('stat-spent-remaining');
+  if (spentRemEl) {
+    if (stats.salary > 0) {
+      const rem = stats.salary - stats.totalSpent;
+      spentRemEl.textContent = `${rem >= 0 ? formatFullAmount(rem) + ' remaining' : formatFullAmount(Math.abs(rem)) + ' over budget'}`;
+      spentRemEl.className = `stat-sub ${rem >= 0 ? 'success' : 'danger'}`;
+    } else {
+      spentRemEl.textContent = '';
+    }
+  }
 
   document.getElementById('stat-remaining').textContent = formatFullAmount(stats.remaining);
   document.getElementById('stat-daily').textContent =
@@ -1806,6 +1816,18 @@ function renderSearchView() {
       e.category.toLowerCase().includes(q) ||
       String(e.amount).includes(q)
     );
+  }
+
+  // Apply unpaid filter
+  if (wdigUnpaidOnly) expenses = expenses.filter(e => !e.paid);
+
+  // Sync wdig unpaid toggle UI
+  const wdigUnpaidToggle = document.getElementById('wdig-unpaid-toggle');
+  const wdigUnpaidLabel = document.getElementById('wdig-unpaid-label');
+  if (wdigUnpaidToggle) wdigUnpaidToggle.checked = wdigUnpaidOnly;
+  if (wdigUnpaidLabel) {
+    wdigUnpaidLabel.style.color = wdigUnpaidOnly ? 'var(--color-danger)' : '';
+    wdigUnpaidLabel.style.fontWeight = wdigUnpaidOnly ? '600' : '';
   }
 
   // Sort by date

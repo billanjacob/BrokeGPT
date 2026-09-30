@@ -221,6 +221,7 @@
               <div class="stat-label">Total Spent</div>
               <div class="stat-value danger" id="stat-spent">₹0</div>
               <div class="stat-sub" id="stat-count">0 transactions</div>
+              <div class="stat-sub" id="stat-spent-remaining"></div>
             </div>
           </div>
 
@@ -367,25 +368,29 @@
 
         <!-- Result Stats -->
         <div class="results-bar">
-          <span class="results-count" id="results-count">0 expenses</span>
-          <span class="results-total" id="results-total">Total: ₹0</span>
-          <div class="unpaid-filter-wrap">
-            <label class="unpaid-switch" for="unpaid-filter-toggle" title="Show unpaid only">
-              <input type="checkbox" id="unpaid-filter-toggle" aria-label="Show unpaid expenses only" />
-              <span class="unpaid-switch-track"><span class="unpaid-switch-thumb"></span></span>
-            </label>
-            <span class="unpaid-filter-label" id="unpaid-filter-label">Unpaid</span>
+          <div class="results-bar-left">
+            <span class="results-count" id="results-count">0 expenses</span>
+            <span class="results-total" id="results-total">Total: ₹0</span>
           </div>
-          <div class="results-bar-actions">
-            <button class="icon-btn" id="add-expense-btn" aria-label="Add new expense (Ctrl+N)" title="Add Expense">
-              <span class="material-symbols-rounded" aria-hidden="true">add</span>
-            </button>
-            <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Newest first">
-              <span class="material-symbols-rounded" id="sort-date-icon">arrow_downward</span>
-            </button>
-            <button class="icon-btn" id="expense-view-toggle" aria-label="Toggle tile view" title="Toggle tile view">
-              <span class="material-symbols-rounded" id="expense-view-icon">grid_view</span>
-            </button>
+          <div class="results-bar-right">
+            <div class="unpaid-filter-wrap">
+              <label class="unpaid-switch" for="unpaid-filter-toggle" title="Show unpaid only">
+                <input type="checkbox" id="unpaid-filter-toggle" aria-label="Show unpaid expenses only" />
+                <span class="unpaid-switch-track"><span class="unpaid-switch-thumb"></span></span>
+              </label>
+              <span class="unpaid-filter-label" id="unpaid-filter-label">Unpaid</span>
+            </div>
+            <div class="results-bar-actions">
+              <button class="icon-btn" id="add-expense-btn" aria-label="Add new expense (Ctrl+N)" title="Add Expense">
+                <span class="material-symbols-rounded" aria-hidden="true">add</span>
+              </button>
+              <button class="sort-btn" id="sort-date-btn" aria-label="Sort by date" title="Newest first">
+                <span class="material-symbols-rounded" id="sort-date-icon">arrow_downward</span>
+              </button>
+              <button class="icon-btn" id="expense-view-toggle" aria-label="Toggle tile view" title="Toggle tile view">
+                <span class="material-symbols-rounded" id="expense-view-icon">grid_view</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -917,7 +922,7 @@
               of Claude AI. Powered by Supabase and chronic financial anxiety. No frameworks were harmed in the making
               of this app, but several savings goals were.</p>
             <div class="about-version">Version 1.0.0 · MIT License</div>
-            <div class="about-version" id="about-last-update">Last Updated: 2026-09-30 · U95</div>
+            <div class="about-version" id="about-last-update">Last Updated: 2026-09-30 · U97</div>
           </div>
 
         </div>
@@ -977,15 +982,26 @@
         </div>
 
         <!-- Results Bar -->
-        <div class="results-bar">
-          <span class="results-count" id="wdig-results-count">0 expenses</span>
-          <span class="results-total" id="wdig-results-total">Total: ₹0</span>
-          <button class="icon-btn" id="wdig-sort-btn" aria-label="Sort by date" title="Newest first">
-            <span class="material-symbols-rounded" id="wdig-sort-icon">arrow_downward</span>
-          </button>
-          <button class="icon-btn" id="wdig-view-toggle" aria-label="Toggle monthly summary" title="Monthly summary">
-            <span class="material-symbols-rounded" id="wdig-view-icon">calendar_month</span>
-          </button>
+        <div class="results-bar wdig-results-bar">
+          <div class="results-bar-left">
+            <span class="results-count" id="wdig-results-count">0 expenses</span>
+            <span class="results-total" id="wdig-results-total">Total: ₹0</span>
+          </div>
+          <div class="results-bar-right">
+            <div class="unpaid-filter-wrap">
+              <label class="unpaid-switch" for="wdig-unpaid-toggle" title="Show unpaid only">
+                <input type="checkbox" id="wdig-unpaid-toggle" aria-label="Show unpaid expenses only" />
+                <span class="unpaid-switch-track"><span class="unpaid-switch-thumb"></span></span>
+              </label>
+              <span class="unpaid-filter-label" id="wdig-unpaid-label">Unpaid</span>
+            </div>
+            <button class="icon-btn" id="wdig-sort-btn" aria-label="Sort by date" title="Newest first">
+              <span class="material-symbols-rounded" id="wdig-sort-icon">arrow_downward</span>
+            </button>
+            <button class="icon-btn" id="wdig-view-toggle" aria-label="Toggle monthly summary" title="Monthly summary">
+              <span class="material-symbols-rounded" id="wdig-view-icon">calendar_month</span>
+            </button>
+          </div>
         </div>
 
         <!-- Results List -->
