@@ -702,6 +702,17 @@ function setupEventListeners() {
   const fab = document.getElementById('fab');
   if (fab) fab.addEventListener('click', openAddExpenseModal);
 
+  // ── Back to top ─────────────────────────────────────────
+  const backToTopBtn = document.getElementById('back-to-top');
+  if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+      backToTopBtn.classList.toggle('visible', window.scrollY > 300);
+    }, { passive: true });
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   // ── Dashboard add expense buttons ───────────────────────
   const dashAddBtn = document.getElementById('dash-add-btn');
   if (dashAddBtn) dashAddBtn.addEventListener('click', openAddExpenseModal);

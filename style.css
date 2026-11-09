@@ -1218,6 +1218,56 @@ body.sidebar-collapsed .main-content {
   transition: transform var(--dur-base) var(--ease);
 }
 
+.back-to-top {
+  position: fixed;
+  bottom: calc(var(--space-8) + env(safe-area-inset-bottom) + 64px);
+  right: calc(var(--space-8) + env(safe-area-inset-right));
+  width: 40px;
+  height: 40px;
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  border: 1px solid var(--border);
+  z-index: 59;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity var(--dur-base) var(--ease),
+              transform var(--dur-base) var(--ease),
+              background var(--dur-base) var(--ease),
+              box-shadow var(--dur-base) var(--ease);
+  outline: none;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--surface-2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  color: var(--text);
+}
+
+.back-to-top:active {
+  transform: scale(0.94);
+}
+
+.back-to-top:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+.back-to-top .material-symbols-rounded {
+  font-size: 20px;
+}
+
 /* ============================================================
    FORMS & INPUTS
    ============================================================ */
@@ -4015,6 +4065,7 @@ kbd {
   .btc-rem  { grid-column: 3; grid-row: 2; font-size: var(--text-xs); }
 
   .fab { bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); right: calc(var(--space-5) + env(safe-area-inset-right)); }
+  .back-to-top { bottom: calc(var(--space-5) + env(safe-area-inset-bottom) + 60px); right: calc(var(--space-5) + env(safe-area-inset-right)); }
 
   /* 3 visible metrics fit better in 3 cols than 2 (avoids orphaned 3rd card) */
   .analytics-summary { grid-template-columns: repeat(3, 1fr); }
