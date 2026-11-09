@@ -676,6 +676,16 @@ function setupEventListeners() {
   const monthNextBtn = document.getElementById('month-next-btn');
   if (monthPrevBtn) monthPrevBtn.addEventListener('click', () => navigateMonth(-1));
   if (monthNextBtn) monthNextBtn.addEventListener('click', () => navigateMonth(1));
+  const monthTodayBtn = document.getElementById('month-today-btn');
+  if (monthTodayBtn) monthTodayBtn.addEventListener('click', () => {
+    const today = getCurrentMonthId();
+    if (currentMonthId !== today) {
+      currentMonthId = today;
+      ensureMonth(currentMonthId);
+      updateSidebarMonthLabel();
+      refreshCurrentView();
+    }
+  });
 
   // ── Dark mode ───────────────────────────────────────────
   const dmToggle = document.getElementById('toggle-dark-mode');
